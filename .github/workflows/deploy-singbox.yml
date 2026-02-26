@@ -1,0 +1,71 @@
+name: "Deploy: sing-box"
+on:
+  push:
+    branches: [master]
+    paths:
+      - configs/sing-box/**
+      - docker-compose/sing-box.yaml
+      - docker-compose.yaml
+      - .github/workflows/deploy-singbox.yml
+jobs:
+  validate:
+    runs-on: [vds-vpn-nl-01]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate compose
+        run: docker compose -f docker-compose/sing-box.yaml config --quiet
+  deploy:
+    needs: validate
+    runs-on: [vds-vpn-nl-01]
+    environment: production
+    env:
+      COMPOSE_PROJECT_DIR: /opt/lab-private
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render server config
+        env:
+          VLESS_UUID: ${{ secrets.VLESS_UUID }}
+          REALITY_PRIVATE_KEY: ${{ secrets.REALITY_PRIVATE_KEY }}
+          REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
+          HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
+          SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
+        run: |
+          envsubst < configs/sing-box/config.json.tpl > configs/sing-box/config.json
+      - name: Render client config
+        env:
+          VLESS_UUID: ${{ secrets.VLESS_UUID }}
+          REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
+          REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
+          HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
+          SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
+        run: |
+          envsubst < configs/sing-box/client.json.tpl > configs/sing-box/client.json
+      - name: Upload client config
+        uses: actions/upload-artifact@v4
+        with:
+          name: sing-box-client-config
+          path: configs/sing-box/client.json
+          retention-days: 7
+      - name: Sync files to deploy directory
+        run: |
+          rsync -a --delete \
+            --exclude='.git' \
+            --exclude='configs/sing-box/tls/' \
+            --exclude='*.tpl' \
+            "$GITHUB_WORKSPACE/" "$COMPOSE_PROJECT_DIR/"
+      - name: Deploy
+        working-directory: /opt/lab-private
+        run: |
+          docker compose -f docker-compose/sing-box.yaml pull
+          docker compose -f docker-compose/sing-box.yaml up -d --remove-orphans
+          docker compose -f docker-compose/sing-box.yaml restart
+      - name: Healthcheck
+        working-directory: /opt/lab-private
+        run: |
+          sleep 3
+          docker compose -f docker-compose/sing-box.yaml ps
+          if docker compose -f docker-compose/sing-box.yaml ps --format json | jq -e '.[] | select(.State != "running")' > /dev/null 2>&1; then
+            echo "Some containers are not running!"
+            docker compose -f docker-compose/sing-box.yaml logs --tail 20
+            exit 1
+          fi

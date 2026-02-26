@@ -1,0 +1,40 @@
+name: Setup server dependencies
+on:
+  workflow_dispatch:
+    inputs:
+      server:
+        description: Target server
+        required: true
+        type: choice
+        options:
+          - vds-vpn-nl-01
+          - vds-mesh-mos-01
+jobs:
+  setup:
+    runs-on: ${{ inputs.server }}
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            rsync \
+            jq \
+            gettext-base \
+            iperf3 \
+      - name: Verify
+        run: |
+          echo "rsync:   $(rsync --version | head -1)"
+          echo "jq:      $(jq --version)"
+          echo "envsubst: $(envsubst --version | head -1)"
+          echo "docker:  $(docker --version)"
+      - name: Prepare deploy directory
+        run: |
+          sudo mkdir -p /opt/lab-private
+          sudo chown -R $(whoami):$(whoami) /opt/lab-private
+  upgrade:
+    runs-on: ${{ inputs.server }}
+    steps:
+      - name: Upgrade
+        run: |
+          sudo apt-get update
+          sudo apt-get upgrade -y
