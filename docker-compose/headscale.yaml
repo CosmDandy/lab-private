@@ -1,0 +1,64 @@
+---
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../configs/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../configs/headscale/avatars:/srv/avatars:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - mesh_network
+    depends_on:
+      - headscale
+      - headplane
+
+  headscale:
+    image: headscale/headscale:0.27.0
+    container_name: headscale
+    restart: unless-stopped
+    volumes:
+      - ../configs/headscale:/etc/headscale
+      - headscale_data:/var/lib/headscale
+    networks:
+      - mesh_network
+    expose:
+      - "8080"
+      - "9090"
+    command: serve
+
+  headplane:
+    image: ghcr.io/tale/headplane:latest
+    container_name: headplane
+    restart: unless-stopped
+    networks:
+      - mesh_network
+    expose:
+      - "3000"
+    volumes:
+      - ../configs/headplane:/etc/headplane
+      - ../configs/headscale:/etc/headscale
+      - headplane_data:/var/lib/headplane
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - headscale
+
+networks:
+  mesh_network:
+    name: mesh_network
+    driver: bridge
+
+volumes:
+  headscale_data:
+    name: headscale_data
+  headplane_data:
+    name: headplane_data
+  caddy_data:
+    name: caddy_data
+  caddy_config:
+    name: caddy_config

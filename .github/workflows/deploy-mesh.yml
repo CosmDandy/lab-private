@@ -1,26 +1,20 @@
-name: "Deploy: headscale + traefik (MOS)"
-
+name: "Deploy: headscale"
 on:
   push:
     branches: [master]
     paths:
       - configs/headscale/**
       - configs/headplane/**
+      - configs/caddy/**
       - docker-compose/headscale.yaml
-      - docker-compose/traefik-external.yaml
       - .github/workflows/deploy-mesh.yml
-
 jobs:
   validate:
     runs-on: [vds-mesh-mos-01]
     steps:
       - uses: actions/checkout@v4
       - name: Validate compose
-        run: |
-          docker compose -f docker-compose/traefik-external.yaml \
-                         -f docker-compose/headscale.yaml \
-                         config --quiet
-
+        run: docker compose -f docker-compose/headscale.yaml config --quiet
   deploy:
     needs: validate
     runs-on: [vds-mesh-mos-01]
@@ -29,40 +23,25 @@ jobs:
       COMPOSE_PROJECT_DIR: /opt/lab-private
     steps:
       - uses: actions/checkout@v4
-
       - name: Sync files to deploy directory
         run: |
           rsync -a --delete \
             --exclude='.git' \
             --exclude='*.tpl' \
             "$GITHUB_WORKSPACE/" "$COMPOSE_PROJECT_DIR/"
-
       - name: Deploy
         working-directory: /opt/lab-private
         run: |
-          docker compose -f docker-compose/traefik-external.yaml \
-                         -f docker-compose/headscale.yaml \
-                         pull
-          docker compose -f docker-compose/traefik-external.yaml \
-                         -f docker-compose/headscale.yaml \
-                         up -d --remove-orphans
-          docker compose -f docker-compose/traefik-external.yaml \
-                         -f docker-compose/headscale.yaml \
-                         restart
-
+          docker compose -f docker-compose/headscale.yaml pull
+          docker compose -f docker-compose/headscale.yaml up -d --remove-orphans
+          docker compose -f docker-compose/headscale.yaml restart
       - name: Healthcheck
         working-directory: /opt/lab-private
         run: |
           sleep 3
-          docker compose -f docker-compose/traefik-external.yaml \
-                         -f docker-compose/headscale.yaml \
-                         ps
-          if docker compose -f docker-compose/traefik-external.yaml \
-                            -f docker-compose/headscale.yaml \
-                            ps --format json | jq -e '.[] | select(.State != "running")' > /dev/null 2>&1; then
+          docker compose -f docker-compose/headscale.yaml ps
+          if docker compose -f docker-compose/headscale.yaml ps --format json | jq -e '.[] | select(.State != "running")' > /dev/null 2>&1; then
             echo "Some containers are not running!"
-            docker compose -f docker-compose/traefik-external.yaml \
-                           -f docker-compose/headscale.yaml \
-                           logs --tail 20
+            docker compose -f docker-compose/headscale.yaml logs --tail 20
             exit 1
           fi
