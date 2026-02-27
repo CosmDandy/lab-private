@@ -40,11 +40,22 @@ jobs:
           SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
         run: |
           envsubst < configs/sing-box/client.json.tpl > configs/sing-box/client.json
-      - name: Upload client config
+      - name: Render mobile config
+        env:
+          VLESS_UUID: ${{ secrets.VLESS_UUID }}
+          REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
+          REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
+          HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
+          SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
+        run: |
+          envsubst < configs/sing-box/mobile.json.tpl > configs/sing-box/mobile.json
+      - name: Upload client configs
         uses: actions/upload-artifact@v4
         with:
-          name: sing-box-client-config
-          path: configs/sing-box/client.json
+          name: sing-box-client-configs
+          path: |
+            configs/sing-box/client.json
+            configs/sing-box/mobile.json
           retention-days: 7
       - name: Sync files to deploy directory
         run: |
