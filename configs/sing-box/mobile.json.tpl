@@ -5,7 +5,8 @@
       { "tag": "remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy" },
       { "tag": "local", "address": "https://1.1.1.1/dns-query", "detour": "direct" }
     ],
-    "rules": [{ "outbound": "any", "server": "local" }]
+    "rules": [{ "outbound": "any", "server": "local" }],
+    "strategy": "ipv4_only"
   },
   "inbounds": [
     {

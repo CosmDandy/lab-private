@@ -4,7 +4,8 @@
     "servers": [
       { "type": "https", "tag": "remote", "server": "1.1.1.1", "domain_resolver": "local" },
       { "type": "local", "tag": "local" }
-    ]
+    ],
+    "strategy": "ipv4_only"
   },
   "inbounds": [
     {
