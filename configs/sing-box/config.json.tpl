@@ -9,10 +9,10 @@
       "users": [{ "uuid": "${VLESS_UUID}", "flow": "" }],
       "tls": {
         "enabled": true,
-        "server_name": "www.microsoft.com",
+        "server_name": "dl.google.com",
         "reality": {
           "enabled": true,
-          "handshake": { "server": "www.microsoft.com", "server_port": 443 },
+          "handshake": { "server": "dl.google.com", "server_port": 443 },
           "private_key": "${REALITY_PRIVATE_KEY}",
           "short_id": ["${REALITY_SHORT_ID}"]
         }
@@ -23,7 +23,7 @@
       "type": "hysteria2",
       "tag": "hysteria2",
       "listen": "::",
-      "listen_port": 444,
+      "listen_port": 8443,
       "users": [{ "password": "${HY2_PASSWORD}" }],
       "tls": {
         "enabled": true,
@@ -33,7 +33,7 @@
       "obfs": { "type": "salamander", "password": "${SALAMANDER_PASSWORD}" }
     }
   ],
-  "outbounds": [{ "type": "direct", "tag": "direct" }],
+  "outbounds": [{ "type": "direct", "tag": "direct", "domain_strategy": "ipv4_only" }],
   "route": {
     "default_domain_resolver": "local"
   },

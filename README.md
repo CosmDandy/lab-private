@@ -106,3 +106,30 @@ Required secrets (repo Settings → Secrets → Actions):
 | `REALITY_SHORT_ID` | sing-box |
 | `HY2_PASSWORD` | sing-box |
 | `SALAMANDER_PASSWORD` | sing-box |
+
+NL сервер (VPN_SERVER_IP_PLACEHOLDER) — sing-box
+
+```
+sudo ufw reset
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp comment 'SSH'
+sudo ufw allow 443/tcp comment 'VLESS Reality gRPC'
+sudo ufw allow 8443/udp comment 'Hysteria2 Salamander'
+sudo ufw enable
+sudo ufw status verbose
+```
+
+MOS сервер — headscale + caddy
+
+```
+sudo ufw reset
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp comment 'SSH'
+sudo ufw allow 80/tcp comment 'Caddy HTTP (ACME redirect)'
+sudo ufw allow 443/tcp comment 'Caddy HTTPS (headscale/headplane)'
+sudo ufw enable
+sudo ufw status verbose
+```
+

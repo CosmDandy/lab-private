@@ -20,12 +20,19 @@
   ],
   "outbounds": [
     {
-      "type": "urltest",
+      "type": "selector",
       "tag": "proxy",
+      "outbounds": ["auto", "vless-reality-grpc", "hysteria2-salamander"],
+      "default": "auto"
+    },
+    {
+      "type": "urltest",
+      "tag": "auto",
       "outbounds": ["vless-reality-grpc", "hysteria2-salamander"],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
-      "tolerance": 50
+      "tolerance": 50,
+      "interrupt_exist_connections": true
     },
     {
       "type": "vless",
@@ -36,7 +43,7 @@
       "flow": "",
       "tls": {
         "enabled": true,
-        "server_name": "www.microsoft.com",
+        "server_name": "dl.google.com",
         "utls": { "enabled": true, "fingerprint": "chrome" },
         "reality": {
           "enabled": true,
@@ -50,7 +57,7 @@
       "type": "hysteria2",
       "tag": "hysteria2-salamander",
       "server": "VPN_SERVER_IP_PLACEHOLDER",
-      "server_port": 444,
+      "server_port": 8443,
       "password": "${HY2_PASSWORD}",
       "tls": { "enabled": true, "server_name": "bing.com", "insecure": true },
       "obfs": { "type": "salamander", "password": "${SALAMANDER_PASSWORD}" }
