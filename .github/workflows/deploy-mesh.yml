@@ -7,6 +7,7 @@ on:
       - configs/headscale/**
       - configs/headplane/**
       - configs/caddy/**
+      - configs/sing-box/**
       - docker-compose/headscale.yaml
       - .github/workflows/deploy-mesh.yml
 jobs:
@@ -24,6 +25,18 @@ jobs:
       COMPOSE_PROJECT_DIR: /opt/lab-private
     steps:
       - uses: actions/checkout@v4
+      - name: Render sing-box configs
+        env:
+          VLESS_UUID: ${{ secrets.VLESS_UUID }}
+          REALITY_PRIVATE_KEY: ${{ secrets.REALITY_PRIVATE_KEY }}
+          REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
+          REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
+          HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
+          SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
+        run: |
+          for tpl in configs/sing-box/*.json.tpl; do
+            envsubst < "$tpl" > "${tpl%.tpl}"
+          done
       - name: Sync files to deploy directory
         run: |
           rsync -a --delete \

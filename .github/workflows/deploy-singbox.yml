@@ -23,42 +23,18 @@ jobs:
       COMPOSE_PROJECT_DIR: /opt/lab-private
     steps:
       - uses: actions/checkout@v4
-      - name: Render server config
+      - name: Render configs
         env:
           VLESS_UUID: ${{ secrets.VLESS_UUID }}
           REALITY_PRIVATE_KEY: ${{ secrets.REALITY_PRIVATE_KEY }}
-          REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
-          HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
-          SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
-        run: |
-          envsubst < configs/sing-box/config.json.tpl > configs/sing-box/config.json
-      - name: Render client config
-        env:
-          VLESS_UUID: ${{ secrets.VLESS_UUID }}
           REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
           REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
           HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
           SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
         run: |
-          envsubst < configs/sing-box/client.json.tpl > configs/sing-box/client.json
-      - name: Render mobile config
-        env:
-          VLESS_UUID: ${{ secrets.VLESS_UUID }}
-          REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
-          REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
-          HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
-          SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
-        run: |
-          envsubst < configs/sing-box/mobile.json.tpl > configs/sing-box/mobile.json
-      - name: Render Linux client config
-        env:
-          VLESS_UUID: ${{ secrets.VLESS_UUID }}
-          REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
-          REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
-          HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
-          SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
-        run: |
-          envsubst < configs/sing-box/client-linux.json.tpl > configs/sing-box/client-linux.json
+          for tpl in configs/sing-box/*.json.tpl; do
+            envsubst < "$tpl" > "${tpl%.tpl}"
+          done
       - name: Upload client configs
         uses: actions/upload-artifact@v4
         with:

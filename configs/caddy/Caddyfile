@@ -2,6 +2,14 @@
 	email tkondrashin@icloud.com
 }
 
+vpn.example.com {
+	basicauth {
+		cosmvpn $2a$14$Dy19CTRWGyD2YV1ZdwGxVO9RMj5LVyilo8CfGr7p97DNYFa.2/IZO
+	}
+	root * /srv/singbox
+	file_server
+}
+
 mesh.example.com {
 	handle_path /avatars/* {
 		root * /srv/avatars
