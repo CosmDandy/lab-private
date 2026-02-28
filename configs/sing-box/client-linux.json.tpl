@@ -16,11 +16,20 @@
       "mtu": 1300,
       "auto_route": true,
       "strict_route": false,
-      "stack": "system",
+      "stack": "mixed",
+      "exclude_interface": ["docker0", "br-9cde5b0d0ec1"],
       "route_exclude_address": [
         "100.64.0.0/24",
+        "172.17.0.0/16",
+        "172.18.0.0/16",
         "192.168.0.0/16"
       ]
+    },
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "172.17.0.1",
+      "listen_port": 7890
     }
   ],
   "outbounds": [
