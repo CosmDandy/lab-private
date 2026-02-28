@@ -2,22 +2,19 @@
   "log": { "level": "info", "timestamp": true },
   "dns": {
     "servers": [
-      { "tag": "remote", "address": "https://1.1.1.1/dns-query", "detour": "proxy" },
-      { "tag": "local", "address": "https://1.1.1.1/dns-query", "detour": "direct" }
+      { "type": "https", "tag": "remote", "server": "1.1.1.1", "domain_resolver": "local" },
+      { "type": "local", "tag": "local" }
     ],
-    "rules": [{ "outbound": "any", "server": "local" }],
     "strategy": "ipv4_only"
   },
   "inbounds": [
     {
       "type": "tun",
       "tag": "tun-in",
-      "inet4_address": "172.19.0.1/30",
-      "inet6_address": "fdfe:dcba:9876::1/126",
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
       "mtu": 1300,
       "auto_route": true,
       "strict_route": true,
-      "sniff": true,
       "stack": "mixed"
     }
   ],
@@ -65,14 +62,14 @@
       "tls": { "enabled": true, "server_name": "bing.com", "insecure": true },
       "obfs": { "type": "salamander", "password": "${SALAMANDER_PASSWORD}" }
     },
-    { "type": "direct", "tag": "direct" },
-    { "type": "block", "tag": "block" },
-    { "type": "dns", "tag": "dns-out" }
+    { "type": "direct", "tag": "direct" }
   ],
   "route": {
+    "default_domain_resolver": "local",
     "rules": [
-      { "protocol": "dns", "outbound": "dns-out" },
-      { "ip_is_private": true, "outbound": "direct" }
+      { "action": "sniff" },
+      { "protocol": "dns", "action": "hijack-dns" },
+      { "ip_is_private": true, "action": "route", "outbound": "direct" }
     ],
     "auto_detect_interface": true,
     "final": "proxy"

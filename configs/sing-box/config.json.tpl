@@ -33,7 +33,13 @@
       "obfs": { "type": "salamander", "password": "${SALAMANDER_PASSWORD}" }
     }
   ],
-  "outbounds": [{ "type": "direct", "tag": "direct", "domain_strategy": "ipv4_only" }],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct",
+      "domain_resolver": { "server": "local", "strategy": "ipv4_only" }
+    }
+  ],
   "route": {
     "default_domain_resolver": "local"
   },
