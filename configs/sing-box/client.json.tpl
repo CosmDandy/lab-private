@@ -25,7 +25,7 @@
       "type": "selector",
       "tag": "proxy",
       "outbounds": ["auto", "vless-reality-grpc", "hysteria2-salamander"],
-      "default": "auto"
+      "default": "hysteria2-salamander"
     },
     {
       "type": "urltest",
