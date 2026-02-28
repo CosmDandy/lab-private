@@ -15,9 +15,12 @@
       "address": ["172.19.0.1/30"],
       "mtu": 1300,
       "auto_route": true,
-      "strict_route": true,
-      "stack": "mixed",
-      "route_exclude_address": ["100.64.0.0/24"]
+      "strict_route": false,
+      "stack": "system",
+      "route_exclude_address": [
+        "100.64.0.0/24",
+        "192.168.0.0/16"
+      ]
     }
   ],
   "outbounds": [

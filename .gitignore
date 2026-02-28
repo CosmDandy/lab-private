@@ -1,4 +1,2 @@
 .DS_Store
 configs/sing-box/tls/
-configs/sing-box/config.json
-configs/sing-box/client.json
