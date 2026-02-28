@@ -27,6 +27,8 @@ services:
       - headscale_data:/var/lib/headscale
     networks:
       - mesh_network
+    ports:
+      - "3478:3478/udp"
     expose:
       - "8080"
       - "9090"

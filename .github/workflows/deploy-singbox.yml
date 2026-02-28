@@ -80,3 +80,13 @@ jobs:
             docker compose -f docker-compose/sing-box.yaml logs --tail 20
             exit 1
           fi
+      - name: Configure firewall
+        run: |
+          sudo ufw --force reset
+          sudo ufw default deny incoming
+          sudo ufw default allow outgoing
+          sudo ufw allow 22/tcp comment 'SSH'
+          sudo ufw allow 443/tcp comment 'VLESS Reality gRPC'
+          sudo ufw allow 8443/udp comment 'Hysteria2 Salamander'
+          sudo ufw --force enable
+          sudo ufw status verbose

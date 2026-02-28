@@ -4,6 +4,8 @@ services:
     image: ghcr.io/sagernet/sing-box:latest
     container_name: sing-box
     restart: unless-stopped
+    environment:
+      ENABLE_DEPRECATED_LEGACY_DOMAIN_STRATEGY_OPTIONS: true
     volumes:
       - ../configs/sing-box:/etc/sing-box
     ports:

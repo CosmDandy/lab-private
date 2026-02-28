@@ -27,7 +27,7 @@ usermod -aG docker github-runner
 ### 2. Configure sudoers (as root)
 
 ```bash
-echo 'github-runner ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/mkdir, /usr/bin/chown' | tee /etc/sudoers.d/github-runner
+echo 'github-runner ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/mkdir, /usr/bin/chown, /usr/sbin/ufw' | tee /etc/sudoers.d/github-runner
 ```
 
 ### 3. Install runner (as github-runner)
@@ -120,7 +120,7 @@ sudo ufw enable
 sudo ufw status verbose
 ```
 
-MOS сервер — headscale + caddy
+MOS сервер (MESH_SERVER_IP_PLACEHOLDER) — headscale + caddy + DERP
 
 ```
 sudo ufw reset
@@ -128,7 +128,8 @@ sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow 22/tcp comment 'SSH'
 sudo ufw allow 80/tcp comment 'Caddy HTTP (ACME redirect)'
-sudo ufw allow 443/tcp comment 'Caddy HTTPS (headscale/headplane)'
+sudo ufw allow 443/tcp comment 'Caddy HTTPS (headscale/headplane/DERP)'
+sudo ufw allow 3478/udp comment 'STUN'
 sudo ufw enable
 sudo ufw status verbose
 ```

@@ -62,7 +62,7 @@ derp:
   server:
     # If enabled, runs the embedded DERP server and merges it into the rest of the DERP config
     # The Headscale server_url defined above MUST be using https, DERP requires TLS to be in place
-    enabled: false
+    enabled: true
     # Region ID to use for the embedded DERP server.
     # The local DERP prevails if the region ID collides with other region ID coming from
     # the regular DERP config.
@@ -74,6 +74,8 @@ derp:
     # When the embedded DERP server is enabled stun_listen_addr MUST be defined.
     #
     # For more details on how this works, check this great article: https://tailscale.com/blog/how-tailscale-works/
+    # Only allow clients associated with this server access
+    verify_clients: true
     stun_listen_addr: "0.0.0.0:3478"
     # Private key used to encrypt the traffic between headscale DERP and
     # Tailscale clients. A missing key will be automatically generated.
@@ -84,8 +86,7 @@ derp:
     automatically_add_embedded_derp_region: true
     # For better connection stability (especially when using an Exit-Node and DNS is not working),
     # it is possible to optionally add the public IPv4 and IPv6 address to the Derp-Map using:
-    ipv4: VPN_SERVER_IP_PLACEHOLDER
-    ipv6: 2001:db8::1
+    ipv4: MESH_SERVER_IP_PLACEHOLDER
   # List of externally available DERP maps encoded in JSON
   urls:
     - https://controlplane.tailscale.com/derpmap/default
@@ -370,4 +371,6 @@ logtail:
 # default static port 41641. This option is intended as a workaround for some buggy
 # firewall devices. See https://tailscale.com/kb/1181/firewalls/ for more information.
 randomize_client_port: false
+taildrop:
+  enabled: true
 
