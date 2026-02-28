@@ -1,0 +1,7 @@
+- name: reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+- name: restart tailscaled
+  ansible.builtin.systemd:
+    name: tailscaled
+    state: restarted

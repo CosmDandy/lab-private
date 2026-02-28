@@ -1,0 +1,10 @@
+ts_version: "1.94.2"
+ts_arch: "amd64"
+ts_hostname: "{{ inventory_hostname }}"
+ts_login_server: "https://mesh.example.com"
+ts_authkey: "{{ vault_tailscale_authkey | default('') }}"
+ts_accept_dns: true
+ts_accept_routes: true
+ts_advertise_routes: ""
+ts_advertise_exit_node: false
+ts_force_reauth: false

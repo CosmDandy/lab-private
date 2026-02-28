@@ -1,0 +1,78 @@
+---
+- name: Set archive variables
+  ansible.builtin.set_fact:
+    _ts_archive: "tailscale_{{ ts_version }}_{{ ts_arch }}"
+    _ts_tmp: "/tmp/tailscale_install"
+
+- name: Stop tailscaled if running
+  ansible.builtin.systemd:
+    name: tailscaled
+    state: stopped
+  failed_when: false
+
+- name: Create temporary directory
+  ansible.builtin.file:
+    path: "{{ _ts_tmp }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy and extract archive
+  ansible.builtin.unarchive:
+    src: "files/{{ _ts_archive }}.tgz"
+    dest: "{{ _ts_tmp }}"
+    creates: "{{ _ts_tmp }}/{{ _ts_archive }}"
+
+- name: Install binaries
+  ansible.builtin.copy:
+    src: "{{ _ts_tmp }}/{{ _ts_archive }}/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0755"
+    owner: root
+    group: root
+    remote_src: true
+  loop:
+    - { src: tailscale, dest: /usr/bin/tailscale }
+    - { src: tailscaled, dest: /usr/sbin/tailscaled }
+  notify: restart tailscaled
+
+- name: Install systemd files
+  ansible.builtin.copy:
+    src: "{{ _ts_tmp }}/{{ _ts_archive }}/systemd/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0644"
+    owner: root
+    group: root
+    remote_src: true
+  loop:
+    - { src: tailscaled.defaults, dest: /etc/default/tailscaled }
+    - { src: tailscaled.service, dest: /etc/systemd/system/tailscaled.service }
+  notify: reload systemd
+
+- name: Create state and cache directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+    owner: root
+    group: root
+  loop:
+    - { path: /var/lib/tailscale, mode: "0700" }
+    - { path: /var/cache/tailscale, mode: "0750" }
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start tailscaled
+  ansible.builtin.systemd:
+    name: tailscaled
+    enabled: true
+    state: started
+
+- name: Wait for tailscaled to start
+  ansible.builtin.wait_for:
+    timeout: 10
+
+- name: Cleanup temporary files
+  ansible.builtin.file:
+    path: "{{ _ts_tmp }}"
+    state: absent
