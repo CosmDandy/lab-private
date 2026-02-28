@@ -1,5 +1,6 @@
 name: "Deploy: sing-box"
 on:
+  workflow_dispatch:
   push:
     branches: [master]
     paths:
@@ -49,6 +50,15 @@ jobs:
           SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
         run: |
           envsubst < configs/sing-box/mobile.json.tpl > configs/sing-box/mobile.json
+      - name: Render Linux client config
+        env:
+          VLESS_UUID: ${{ secrets.VLESS_UUID }}
+          REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
+          REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
+          HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
+          SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
+        run: |
+          envsubst < configs/sing-box/client-linux.json.tpl > configs/sing-box/client-linux.json
       - name: Upload client configs
         uses: actions/upload-artifact@v4
         with:
@@ -56,6 +66,7 @@ jobs:
           path: |
             configs/sing-box/client.json
             configs/sing-box/mobile.json
+            configs/sing-box/client-linux.json
           retention-days: 7
       - name: Sync files to deploy directory
         run: |
