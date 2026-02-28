@@ -2,8 +2,8 @@
   "log": { "level": "info", "timestamp": true },
   "dns": {
     "servers": [
-      { "type": "https", "tag": "remote", "server": "1.1.1.1", "domain_resolver": "local" },
-      { "type": "local", "tag": "local" }
+      { "address": "https://1.1.1.1/dns-query", "tag": "remote", "address_resolver": "local" },
+      { "address": "local", "tag": "local" }
     ],
     "strategy": "ipv4_only"
   },
@@ -65,7 +65,6 @@
     { "type": "direct", "tag": "direct" }
   ],
   "route": {
-    "default_domain_resolver": "local",
     "rules": [
       { "action": "sniff" },
       { "protocol": "dns", "action": "hijack-dns" },
