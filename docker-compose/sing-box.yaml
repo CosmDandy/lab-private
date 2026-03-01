@@ -10,6 +10,9 @@ services:
       - ../configs/sing-box:/etc/sing-box
     ports:
       - "443:443/tcp"
+      - "2053:2053/tcp"
+      - "2083:2083/tcp"
+      - "64444:64444/tcp"
       - "8443:8443/udp"
     cap_add:
       - NET_ADMIN

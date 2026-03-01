@@ -22,13 +22,13 @@
     {
       "type": "selector",
       "tag": "proxy",
-      "outbounds": ["auto", "vless-reality-grpc", "hysteria2-salamander"],
+      "outbounds": ["auto", "vless-reality-grpc", "vless-reality-grpc-2053", "vless-reality-grpc-2083", "vless-reality-grpc-64444", "hysteria2-salamander"],
       "default": "hysteria2-salamander"
     },
     {
       "type": "urltest",
       "tag": "auto",
-      "outbounds": ["vless-reality-grpc", "hysteria2-salamander"],
+      "outbounds": ["vless-reality-grpc", "vless-reality-grpc-2053", "vless-reality-grpc-2083", "vless-reality-grpc-64444", "hysteria2-salamander"],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
       "tolerance": 50,
@@ -43,7 +43,64 @@
       "flow": "",
       "tls": {
         "enabled": true,
-        "server_name": "dl.google.com",
+        "server_name": "www.microsoft.com",
+        "utls": { "enabled": true, "fingerprint": "chrome" },
+        "reality": {
+          "enabled": true,
+          "public_key": "${REALITY_PUBLIC_KEY}",
+          "short_id": "${REALITY_SHORT_ID}"
+        }
+      },
+      "transport": { "type": "grpc", "service_name": "grpc" }
+    },
+    {
+      "type": "vless",
+      "tag": "vless-reality-grpc-2053",
+      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server_port": 2053,
+      "uuid": "${VLESS_UUID}",
+      "flow": "",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.microsoft.com",
+        "utls": { "enabled": true, "fingerprint": "chrome" },
+        "reality": {
+          "enabled": true,
+          "public_key": "${REALITY_PUBLIC_KEY}",
+          "short_id": "${REALITY_SHORT_ID}"
+        }
+      },
+      "transport": { "type": "grpc", "service_name": "grpc" }
+    },
+    {
+      "type": "vless",
+      "tag": "vless-reality-grpc-2083",
+      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server_port": 2083,
+      "uuid": "${VLESS_UUID}",
+      "flow": "",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.microsoft.com",
+        "utls": { "enabled": true, "fingerprint": "chrome" },
+        "reality": {
+          "enabled": true,
+          "public_key": "${REALITY_PUBLIC_KEY}",
+          "short_id": "${REALITY_SHORT_ID}"
+        }
+      },
+      "transport": { "type": "grpc", "service_name": "grpc" }
+    },
+    {
+      "type": "vless",
+      "tag": "vless-reality-grpc-64444",
+      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server_port": 64444,
+      "uuid": "${VLESS_UUID}",
+      "flow": "",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.microsoft.com",
         "utls": { "enabled": true, "fingerprint": "chrome" },
         "reality": {
           "enabled": true,
@@ -68,7 +125,24 @@
     "rules": [
       { "action": "sniff" },
       { "protocol": "dns", "action": "hijack-dns" },
-      { "ip_is_private": true, "action": "route", "outbound": "direct" }
+      { "ip_is_private": true, "action": "route", "outbound": "direct" },
+      { "rule_set": ["geosite-ru", "geoip-ru"], "action": "route", "outbound": "direct" }
+    ],
+    "rule_set": [
+      {
+        "type": "remote",
+        "tag": "geosite-ru",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ru.srs",
+        "download_detour": "proxy"
+      },
+      {
+        "type": "remote",
+        "tag": "geoip-ru",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs",
+        "download_detour": "proxy"
+      }
     ],
     "auto_detect_interface": true,
     "final": "proxy"

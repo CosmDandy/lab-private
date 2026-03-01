@@ -83,7 +83,24 @@
     "rules": [
       { "action": "sniff" },
       { "protocol": "dns", "action": "hijack-dns" },
-      { "ip_is_private": true, "action": "route", "outbound": "direct" }
+      { "ip_is_private": true, "action": "route", "outbound": "direct" },
+      { "rule_set": ["geosite-ru", "geoip-ru"], "action": "route", "outbound": "direct" }
+    ],
+    "rule_set": [
+      {
+        "type": "remote",
+        "tag": "geosite-ru",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ru.srs",
+        "download_detour": "proxy"
+      },
+      {
+        "type": "remote",
+        "tag": "geoip-ru",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs",
+        "download_detour": "proxy"
+      }
     ],
     "auto_detect_interface": true,
     "final": "proxy"

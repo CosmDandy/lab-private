@@ -74,6 +74,9 @@ jobs:
           sudo ufw default allow outgoing
           sudo ufw allow 22/tcp comment 'SSH'
           sudo ufw allow 443/tcp comment 'VLESS Reality gRPC'
+          sudo ufw allow 2053/tcp comment 'VLESS Reality gRPC'
+          sudo ufw allow 2083/tcp comment 'VLESS Reality gRPC'
+          sudo ufw allow 64444/tcp comment 'VLESS Reality gRPC'
           sudo ufw allow 8443/udp comment 'Hysteria2 Salamander'
           sudo ufw --force enable
           sudo ufw status verbose

@@ -9,10 +9,64 @@
       "users": [{ "uuid": "${VLESS_UUID}", "flow": "" }],
       "tls": {
         "enabled": true,
-        "server_name": "dl.google.com",
+        "server_name": "www.microsoft.com",
         "reality": {
           "enabled": true,
-          "handshake": { "server": "dl.google.com", "server_port": 443 },
+          "handshake": { "server": "www.microsoft.com", "server_port": 443 },
+          "private_key": "${REALITY_PRIVATE_KEY}",
+          "short_id": ["${REALITY_SHORT_ID}"]
+        }
+      },
+      "transport": { "type": "grpc", "service_name": "grpc" }
+    },
+    {
+      "type": "vless",
+      "tag": "vless-reality-2053",
+      "listen": "::",
+      "listen_port": 2053,
+      "users": [{ "uuid": "${VLESS_UUID}", "flow": "" }],
+      "tls": {
+        "enabled": true,
+        "server_name": "www.microsoft.com",
+        "reality": {
+          "enabled": true,
+          "handshake": { "server": "www.microsoft.com", "server_port": 443 },
+          "private_key": "${REALITY_PRIVATE_KEY}",
+          "short_id": ["${REALITY_SHORT_ID}"]
+        }
+      },
+      "transport": { "type": "grpc", "service_name": "grpc" }
+    },
+    {
+      "type": "vless",
+      "tag": "vless-reality-2083",
+      "listen": "::",
+      "listen_port": 2083,
+      "users": [{ "uuid": "${VLESS_UUID}", "flow": "" }],
+      "tls": {
+        "enabled": true,
+        "server_name": "www.microsoft.com",
+        "reality": {
+          "enabled": true,
+          "handshake": { "server": "www.microsoft.com", "server_port": 443 },
+          "private_key": "${REALITY_PRIVATE_KEY}",
+          "short_id": ["${REALITY_SHORT_ID}"]
+        }
+      },
+      "transport": { "type": "grpc", "service_name": "grpc" }
+    },
+    {
+      "type": "vless",
+      "tag": "vless-reality-64444",
+      "listen": "::",
+      "listen_port": 64444,
+      "users": [{ "uuid": "${VLESS_UUID}", "flow": "" }],
+      "tls": {
+        "enabled": true,
+        "server_name": "www.microsoft.com",
+        "reality": {
+          "enabled": true,
+          "handshake": { "server": "www.microsoft.com", "server_port": 443 },
           "private_key": "${REALITY_PRIVATE_KEY}",
           "short_id": ["${REALITY_SHORT_ID}"]
         }
