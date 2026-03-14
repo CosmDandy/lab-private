@@ -13,7 +13,10 @@ services:
       - "2053:2053/tcp"
       - "2083:2083/tcp"
       - "64444:64444/tcp"
+      - "2087:2087/tcp"
       - "8443:8443/udp"
+      - "8444:8444/udp"
+      - "8388:8388/tcp"
     cap_add:
       - NET_ADMIN
     command: run -c /etc/sing-box/config.json

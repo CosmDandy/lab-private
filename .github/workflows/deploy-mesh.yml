@@ -33,6 +33,9 @@ jobs:
           REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
           HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
           SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
+          TUIC_PASSWORD: ${{ secrets.TUIC_PASSWORD }}
+          SHADOWTLS_PASSWORD: ${{ secrets.SHADOWTLS_PASSWORD }}
+          SS_PASSWORD: ${{ secrets.SS_PASSWORD }}
         run: |
           for tpl in configs/sing-box/*.json.tpl; do
             envsubst < "$tpl" > "${tpl%.tpl}"

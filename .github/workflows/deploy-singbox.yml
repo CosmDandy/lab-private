@@ -31,6 +31,9 @@ jobs:
           REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
           HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
           SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
+          TUIC_PASSWORD: ${{ secrets.TUIC_PASSWORD }}
+          SHADOWTLS_PASSWORD: ${{ secrets.SHADOWTLS_PASSWORD }}
+          SS_PASSWORD: ${{ secrets.SS_PASSWORD }}
         run: |
           for tpl in configs/sing-box/*.json.tpl; do
             envsubst < "$tpl" > "${tpl%.tpl}"
@@ -77,6 +80,9 @@ jobs:
           sudo ufw allow 2053/tcp comment 'VLESS Reality gRPC'
           sudo ufw allow 2083/tcp comment 'VLESS Reality gRPC'
           sudo ufw allow 64444/tcp comment 'VLESS Reality gRPC'
+          sudo ufw allow 2087/tcp comment 'VLESS Reality HTTPUpgrade'
           sudo ufw allow 8443/udp comment 'Hysteria2 Salamander'
+          sudo ufw allow 8444/udp comment 'TUIC v5'
+          sudo ufw allow 8388/tcp comment 'ShadowTLS + Shadowsocks'
           sudo ufw --force enable
           sudo ufw status verbose

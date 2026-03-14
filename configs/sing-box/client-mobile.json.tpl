@@ -22,13 +22,13 @@
     {
       "type": "selector",
       "tag": "proxy",
-      "outbounds": ["auto", "vless-reality-grpc", "vless-reality-grpc-2053", "vless-reality-grpc-2083", "vless-reality-grpc-64444", "hysteria2-salamander"],
+      "outbounds": ["auto", "vless-reality-grpc", "vless-reality-grpc-2053", "vless-reality-grpc-2083", "vless-reality-grpc-64444", "vless-reality-httpupgrade", "hysteria2-salamander", "tuic", "ss-shadowtls"],
       "default": "hysteria2-salamander"
     },
     {
       "type": "urltest",
       "tag": "auto",
-      "outbounds": ["vless-reality-grpc", "vless-reality-grpc-2053", "vless-reality-grpc-2083", "vless-reality-grpc-64444", "hysteria2-salamander"],
+      "outbounds": ["vless-reality-grpc", "vless-reality-grpc-2053", "vless-reality-grpc-2083", "vless-reality-grpc-64444", "vless-reality-httpupgrade", "hysteria2-salamander", "tuic", "ss-shadowtls"],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
       "tolerance": 50,
@@ -62,7 +62,7 @@
       "flow": "",
       "tls": {
         "enabled": true,
-        "server_name": "www.microsoft.com",
+        "server_name": "dl.google.com",
         "utls": { "enabled": true, "fingerprint": "chrome" },
         "reality": {
           "enabled": true,
@@ -81,7 +81,7 @@
       "flow": "",
       "tls": {
         "enabled": true,
-        "server_name": "www.microsoft.com",
+        "server_name": "www.samsung.com",
         "utls": { "enabled": true, "fingerprint": "chrome" },
         "reality": {
           "enabled": true,
@@ -100,7 +100,7 @@
       "flow": "",
       "tls": {
         "enabled": true,
-        "server_name": "www.microsoft.com",
+        "server_name": "learn.microsoft.com",
         "utls": { "enabled": true, "fingerprint": "chrome" },
         "reality": {
           "enabled": true,
@@ -111,6 +111,25 @@
       "transport": { "type": "grpc", "service_name": "grpc" }
     },
     {
+      "type": "vless",
+      "tag": "vless-reality-httpupgrade",
+      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server_port": 2087,
+      "uuid": "${VLESS_UUID}",
+      "flow": "",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.logitech.com",
+        "utls": { "enabled": true, "fingerprint": "chrome" },
+        "reality": {
+          "enabled": true,
+          "public_key": "${REALITY_PUBLIC_KEY}",
+          "short_id": "${REALITY_SHORT_ID}"
+        }
+      },
+      "transport": { "type": "httpupgrade", "path": "/upgrade" }
+    },
+    {
       "type": "hysteria2",
       "tag": "hysteria2-salamander",
       "server": "VPN_SERVER_IP_PLACEHOLDER",
@@ -118,6 +137,36 @@
       "password": "${HY2_PASSWORD}",
       "tls": { "enabled": true, "server_name": "bing.com", "insecure": true },
       "obfs": { "type": "salamander", "password": "${SALAMANDER_PASSWORD}" }
+    },
+    {
+      "type": "tuic",
+      "tag": "tuic",
+      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server_port": 8444,
+      "uuid": "${VLESS_UUID}",
+      "password": "${TUIC_PASSWORD}",
+      "congestion_control": "bbr",
+      "tls": { "enabled": true, "server_name": "bing.com", "insecure": true }
+    },
+    {
+      "type": "shadowsocks",
+      "tag": "ss-shadowtls",
+      "method": "2022-blake3-aes-128-gcm",
+      "password": "${SS_PASSWORD}",
+      "detour": "shadowtls-out"
+    },
+    {
+      "type": "shadowtls",
+      "tag": "shadowtls-out",
+      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server_port": 8388,
+      "version": 3,
+      "password": "${SHADOWTLS_PASSWORD}",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.apple.com",
+        "utls": { "enabled": true, "fingerprint": "chrome" }
+      }
     },
     { "type": "direct", "tag": "direct" }
   ],
