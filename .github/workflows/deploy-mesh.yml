@@ -14,7 +14,7 @@ jobs:
   validate:
     runs-on: [vds-mesh-mos-01]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Validate compose
         run: docker compose -f docker-compose/headscale.yaml config --quiet
   deploy:
@@ -24,7 +24,7 @@ jobs:
     env:
       COMPOSE_PROJECT_DIR: /opt/lab-private
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Render sing-box configs
         env:
           VLESS_UUID: ${{ secrets.VLESS_UUID }}

@@ -12,7 +12,7 @@ jobs:
   validate:
     runs-on: [vds-vpn-nl-01]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Validate compose
         run: docker compose -f docker-compose/sing-box.yaml config --quiet
   deploy:
@@ -22,7 +22,7 @@ jobs:
     env:
       COMPOSE_PROJECT_DIR: /opt/lab-private
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Render configs
         env:
           VLESS_UUID: ${{ secrets.VLESS_UUID }}
@@ -35,8 +35,15 @@ jobs:
           for tpl in configs/sing-box/*.json.tpl; do
             envsubst < "$tpl" > "${tpl%.tpl}"
           done
+      - name: Validate sing-box configs
+        run: |
+          for cfg in configs/sing-box/*.json; do
+            echo "Validating $cfg..."
+            docker run --rm -v "$PWD/$cfg:/etc/sing-box/config.json:ro" \
+              ghcr.io/sagernet/sing-box:latest check -c /etc/sing-box/config.json
+          done
       - name: Upload client configs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sing-box-client-configs
           path: |
