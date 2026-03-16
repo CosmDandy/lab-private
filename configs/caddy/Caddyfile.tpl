@@ -1,16 +1,16 @@
 {
-	email tkondrashin@icloud.com
+	email ${ACME_EMAIL}
 }
 
-vpn.example.com {
+${VPN_DOMAIN} {
 	basicauth {
-		cosmvpn $2a$14$Dy19CTRWGyD2YV1ZdwGxVO9RMj5LVyilo8CfGr7p97DNYFa.2/IZO
+		${CADDY_VPN_USER} ${CADDY_VPN_HASH}
 	}
 	root * /srv/singbox
 	file_server
 }
 
-mesh.example.com {
+${MESH_DOMAIN} {
 	handle_path /avatars/* {
 		root * /srv/avatars
 		file_server
@@ -18,14 +18,14 @@ mesh.example.com {
 
 	handle /admin/* {
 		basicauth {
-			exampleuser $2y$05$QloXxJw1cehXULuFYY5lQuJsCVQC6KkpBn8BudsuEPcBQDJWANlIS
+			${CADDY_MESH_USER} ${CADDY_MESH_HASH}
 		}
 		reverse_proxy headplane:3000
 	}
 
 	handle /health/* {
 		basicauth {
-			exampleuser $2y$05$QloXxJw1cehXULuFYY5lQuJsCVQC6KkpBn8BudsuEPcBQDJWANlIS
+			${CADDY_MESH_USER} ${CADDY_MESH_HASH}
 		}
 		reverse_proxy headscale:9090
 	}

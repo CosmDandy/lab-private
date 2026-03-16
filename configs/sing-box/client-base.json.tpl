@@ -40,7 +40,7 @@
     {
       "type": "vless",
       "tag": "vless-reality-grpc",
-      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server": "${VPN_SERVER_IP}",
       "server_port": 443,
       "uuid": "${VLESS_UUID}",
       "flow": "",
@@ -59,7 +59,7 @@
     {
       "type": "vless",
       "tag": "vless-reality-grpc-2053",
-      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server": "${VPN_SERVER_IP}",
       "server_port": 2053,
       "uuid": "${VLESS_UUID}",
       "flow": "",
@@ -78,7 +78,7 @@
     {
       "type": "vless",
       "tag": "vless-reality-grpc-2083",
-      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server": "${VPN_SERVER_IP}",
       "server_port": 2083,
       "uuid": "${VLESS_UUID}",
       "flow": "",
@@ -97,7 +97,7 @@
     {
       "type": "vless",
       "tag": "vless-reality-grpc-64444",
-      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server": "${VPN_SERVER_IP}",
       "server_port": 64444,
       "uuid": "${VLESS_UUID}",
       "flow": "",
@@ -116,7 +116,7 @@
     {
       "type": "vless",
       "tag": "vless-reality-httpupgrade",
-      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server": "${VPN_SERVER_IP}",
       "server_port": 2087,
       "uuid": "${VLESS_UUID}",
       "flow": "",
@@ -135,7 +135,7 @@
     {
       "type": "hysteria2",
       "tag": "hysteria2-salamander",
-      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server": "${VPN_SERVER_IP}",
       "server_port": 8443,
       "password": "${HY2_PASSWORD}",
       "tls": { "enabled": true, "server_name": "bing.com", "insecure": true },
@@ -144,7 +144,7 @@
     {
       "type": "tuic",
       "tag": "tuic",
-      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server": "${VPN_SERVER_IP}",
       "server_port": 8444,
       "uuid": "${VLESS_UUID}",
       "password": "${TUIC_PASSWORD}",
@@ -161,7 +161,7 @@
     {
       "type": "shadowtls",
       "tag": "shadowtls-out",
-      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server": "${VPN_SERVER_IP}",
       "server_port": 8388,
       "version": 3,
       "password": "${SHADOWTLS_PASSWORD}",
@@ -174,7 +174,7 @@
     {
       "type": "trojan",
       "tag": "trojan",
-      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server": "${VPN_SERVER_IP}",
       "server_port": 8445,
       "password": "${TROJAN_PASSWORD}",
       "tls": { "enabled": true, "server_name": "bing.com", "insecure": true }
@@ -182,7 +182,7 @@
     {
       "type": "shadowsocks",
       "tag": "ss-plain",
-      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server": "${VPN_SERVER_IP}",
       "server_port": 8389,
       "method": "2022-blake3-aes-128-gcm",
       "password": "${SS_PLAIN_PASSWORD}"

@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v6
       - name: Render configs
         env:
+          VPN_SERVER_IP: ${{ vars.VPN_SERVER_IP }}
           VLESS_UUID: ${{ secrets.VLESS_UUID }}
           REALITY_PRIVATE_KEY: ${{ secrets.REALITY_PRIVATE_KEY }}
           REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
