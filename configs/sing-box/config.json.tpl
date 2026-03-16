@@ -135,6 +135,26 @@
       "listen_port": 18388,
       "method": "2022-blake3-aes-128-gcm",
       "password": "${SS_PASSWORD}"
+    },
+    {
+      "type": "trojan",
+      "tag": "trojan-in",
+      "listen": "::",
+      "listen_port": 8445,
+      "users": [{ "password": "${TROJAN_PASSWORD}" }],
+      "tls": {
+        "enabled": true,
+        "certificate_path": "/etc/sing-box/tls/hysteria2.crt",
+        "key_path": "/etc/sing-box/tls/hysteria2.key"
+      }
+    },
+    {
+      "type": "shadowsocks",
+      "tag": "shadowsocks-plain-in",
+      "listen": "::",
+      "listen_port": 8389,
+      "method": "2022-blake3-aes-128-gcm",
+      "password": "${SS_PLAIN_PASSWORD}"
     }
   ],
   "outbounds": [

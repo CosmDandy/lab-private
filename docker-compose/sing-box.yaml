@@ -17,6 +17,8 @@ services:
       - "8443:8443/udp"
       - "8444:8444/udp"
       - "8388:8388/tcp"
+      - "8445:8445/tcp"
+      - "8389:8389/tcp"
     cap_add:
       - NET_ADMIN
     command: run -c /etc/sing-box/config.json

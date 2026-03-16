@@ -36,6 +36,9 @@ jobs:
           TUIC_PASSWORD: ${{ secrets.TUIC_PASSWORD }}
           SHADOWTLS_PASSWORD: ${{ secrets.SHADOWTLS_PASSWORD }}
           SS_PASSWORD: ${{ secrets.SS_PASSWORD }}
+          TROJAN_PASSWORD: ${{ secrets.TROJAN_PASSWORD }}
+          SS_PLAIN_PASSWORD: ${{ secrets.SS_PLAIN_PASSWORD }}
+
         run: |
           for tpl in configs/sing-box/*.json.tpl; do
             envsubst < "$tpl" > "${tpl%.tpl}"

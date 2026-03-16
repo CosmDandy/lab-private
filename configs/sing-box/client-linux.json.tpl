@@ -36,13 +36,13 @@
     {
       "type": "selector",
       "tag": "proxy",
-      "outbounds": ["auto", "vless-reality-grpc", "vless-reality-httpupgrade", "hysteria2-salamander", "tuic", "ss-shadowtls"],
+      "outbounds": ["auto", "vless-reality-grpc", "vless-reality-httpupgrade", "hysteria2-salamander", "tuic", "ss-shadowtls", "trojan", "ss-plain"],
       "default": "hysteria2-salamander"
     },
     {
       "type": "urltest",
       "tag": "auto",
-      "outbounds": ["vless-reality-grpc", "vless-reality-httpupgrade", "hysteria2-salamander", "tuic", "ss-shadowtls"],
+      "outbounds": ["vless-reality-grpc", "vless-reality-httpupgrade", "hysteria2-salamander", "tuic", "ss-shadowtls", "trojan", "ss-plain"],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
       "tolerance": 50,
@@ -124,6 +124,22 @@
         "server_name": "www.apple.com",
         "utls": { "enabled": true, "fingerprint": "chrome" }
       }
+    },
+    {
+      "type": "trojan",
+      "tag": "trojan",
+      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server_port": 8445,
+      "password": "${TROJAN_PASSWORD}",
+      "tls": { "enabled": true, "server_name": "bing.com", "insecure": true }
+    },
+    {
+      "type": "shadowsocks",
+      "tag": "ss-plain",
+      "server": "VPN_SERVER_IP_PLACEHOLDER",
+      "server_port": 8389,
+      "method": "2022-blake3-aes-128-gcm",
+      "password": "${SS_PLAIN_PASSWORD}"
     },
     { "type": "direct", "tag": "direct" }
   ],
