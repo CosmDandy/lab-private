@@ -1,0 +1,8 @@
+---
+ufw_rules:
+  - { port: "80", proto: tcp, comment: "Caddy HTTP" }
+  - { port: "443", proto: tcp, comment: "Caddy HTTPS + DERP" }
+  - { port: "3478", proto: udp, comment: "STUN" }
+
+backup_remote_host: "" # fill with NL Tailscale IP
+backup_remote_user: "root"

@@ -20,18 +20,18 @@ ${MESH_DOMAIN} {
 		basicauth {
 			${CADDY_MESH_USER} ${CADDY_MESH_HASH}
 		}
-		reverse_proxy headplane:3000
+		reverse_proxy localhost:3000
 	}
 
 	handle /health/* {
 		basicauth {
 			${CADDY_MESH_USER} ${CADDY_MESH_HASH}
 		}
-		reverse_proxy headscale:9090
+		reverse_proxy localhost:9090
 	}
 
 	handle {
-		reverse_proxy headscale:8080 {
+		reverse_proxy localhost:8080 {
 			flush_interval -1
 		}
 	}

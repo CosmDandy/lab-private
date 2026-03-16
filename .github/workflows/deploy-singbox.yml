@@ -4,9 +4,8 @@ on:
   push:
     branches: [master]
     paths:
-      - configs/sing-box/**
-      - docker-compose/sing-box.yaml
-      - docker-compose.yaml
+      - infra/vpn-nl/**
+      - clients/sing-box/**
       - .github/workflows/deploy-singbox.yml
 jobs:
   validate:
@@ -14,15 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Validate compose
-        run: docker compose -f docker-compose/sing-box.yaml config --quiet
+        run: docker compose -f infra/vpn-nl/docker-compose.yaml config --quiet
   deploy:
     needs: validate
     runs-on: [vds-vpn-nl-01]
     environment: production
     env:
-      COMPOSE_PROJECT_DIR: /opt/lab-private
+      DEPLOY_DIR: /opt/lab-private
     steps:
       - uses: actions/checkout@v6
+      - name: Generate client configs from Jsonnet
+        run: make -C clients/sing-box
       - name: Render configs
         env:
           VPN_SERVER_IP: ${{ vars.VPN_SERVER_IP }}
@@ -37,9 +38,11 @@ jobs:
           SS_PASSWORD: ${{ secrets.SS_PASSWORD }}
           TROJAN_PASSWORD: ${{ secrets.TROJAN_PASSWORD }}
           SS_PLAIN_PASSWORD: ${{ secrets.SS_PLAIN_PASSWORD }}
-
         run: |
-          for tpl in configs/sing-box/*.json.tpl; do
+          for tpl in infra/vpn-nl/configs/sing-box/*.tpl; do
+            envsubst < "$tpl" > "${tpl%.tpl}"
+          done
+          for tpl in clients/sing-box/*.json.tpl; do
             envsubst < "$tpl" > "${tpl%.tpl}"
           done
       - name: Upload client configs
@@ -47,36 +50,34 @@ jobs:
         with:
           name: sing-box-client-configs
           path: |
-            configs/sing-box/client-base.json
-            configs/sing-box/client-mobile.json
-            configs/sing-box/client-linux.json
+            clients/sing-box/client-base.json
+            clients/sing-box/client-mobile.json
+            clients/sing-box/client-linux.json
           retention-days: 7
       - name: Sync files to deploy directory
         run: |
           rsync -a --delete \
             --exclude='.git' \
-            --exclude='configs/sing-box/tls/' \
+            --exclude='infra/vpn-nl/configs/sing-box/tls/' \
             --exclude='*.tpl' \
-            "$GITHUB_WORKSPACE/" "$COMPOSE_PROJECT_DIR/"
+            "$GITHUB_WORKSPACE/" "$DEPLOY_DIR/"
       - name: Deploy
         working-directory: /opt/lab-private
         run: |
-          docker compose -f docker-compose/sing-box.yaml pull
-          docker compose -f docker-compose/sing-box.yaml up -d --remove-orphans
-          docker compose -f docker-compose/sing-box.yaml restart
+          docker compose -f infra/vpn-nl/docker-compose.yaml pull
+          docker compose -f infra/vpn-nl/docker-compose.yaml up -d --remove-orphans
       - name: Healthcheck
         working-directory: /opt/lab-private
         run: |
-          sleep 3
-          docker compose -f docker-compose/sing-box.yaml ps
-          if docker compose -f docker-compose/sing-box.yaml ps --format json | jq -e '.[] | select(.State != "running")' > /dev/null 2>&1; then
+          sleep 5
+          docker compose -f infra/vpn-nl/docker-compose.yaml ps
+          if docker compose -f infra/vpn-nl/docker-compose.yaml ps --format json | jq -e '.[] | select(.State != "running")' > /dev/null 2>&1; then
             echo "Some containers are not running!"
-            docker compose -f docker-compose/sing-box.yaml logs --tail 20
+            docker compose -f infra/vpn-nl/docker-compose.yaml logs --tail 20
             exit 1
           fi
       - name: Configure firewall
         run: |
-          sudo ufw --force reset
           sudo ufw default deny incoming
           sudo ufw default allow outgoing
           sudo ufw allow 22/tcp comment 'SSH'

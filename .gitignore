@@ -1,2 +1,8 @@
 .DS_Store
-configs/sing-box/tls/
+infra/vpn-nl/configs/sing-box/tls/
+.env
+clients/sing-box/*.json.tpl
+
+# Ansible role binary archives
+ansible/roles/*/files/*.tgz
+ansible/roles/*/files/*.zip

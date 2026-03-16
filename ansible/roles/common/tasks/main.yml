@@ -1,0 +1,50 @@
+---
+- name: Update and upgrade apt packages
+  ansible.builtin.apt:
+    upgrade: safe
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name:
+      - rsync
+      - jq
+      - gettext-base
+      - iperf3
+      - curl
+      - htop
+      - sqlite3
+      - make
+    state: present
+
+- name: Set locale
+  ansible.builtin.locale_gen:
+    name: en_US.UTF-8
+    state: present
+
+- name: Install jsonnet
+  ansible.builtin.get_url:
+    url: "https://github.com/google/go-jsonnet/releases/download/{{ jsonnet_version }}/go-jsonnet_Linux_x86_64.tar.gz"
+    dest: /tmp/go-jsonnet.tar.gz
+    checksum: "sha256:https://github.com/google/go-jsonnet/releases/download/{{ jsonnet_version }}/checksums.txt"
+    mode: "0644"
+  register: jsonnet_download
+
+- name: Extract jsonnet binary
+  ansible.builtin.unarchive:
+    src: /tmp/go-jsonnet.tar.gz
+    dest: /usr/local/bin
+    include:
+      - jsonnet
+    remote_src: true
+    mode: "0755"
+  when: jsonnet_download.changed
+
+- name: Create deploy directory
+  ansible.builtin.file:
+    path: /opt/lab-private
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"

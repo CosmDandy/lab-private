@@ -1,0 +1,13 @@
+---
+ufw_rules:
+  - { port: "443", proto: tcp, comment: "VLESS Reality gRPC" }
+  - { port: "2053", proto: tcp, comment: "VLESS Reality gRPC" }
+  - { port: "2083", proto: tcp, comment: "VLESS Reality gRPC" }
+  - { port: "64444", proto: tcp, comment: "VLESS Reality gRPC" }
+  - { port: "2087", proto: tcp, comment: "VLESS Reality HTTPUpgrade" }
+  - { port: "8443", proto: udp, comment: "Hysteria2 Salamander" }
+  - { port: "8444", proto: udp, comment: "TUIC v5" }
+  - { port: "8388", proto: tcp, comment: "ShadowTLS + Shadowsocks" }
+  - { port: "8445", proto: tcp, comment: "Trojan" }
+  - { port: "8389", proto: tcp, comment: "Shadowsocks plain" }
+

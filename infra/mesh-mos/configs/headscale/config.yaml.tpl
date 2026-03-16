@@ -8,7 +8,7 @@
 #
 # https://myheadscale.example.com:443
 #
-server_url: https://mesh.example.com/
+server_url: https://${MESH_DOMAIN}/
 # Address to listen to / bind to on the server
 #
 # For production:
@@ -86,7 +86,7 @@ derp:
     automatically_add_embedded_derp_region: true
     # For better connection stability (especially when using an Exit-Node and DNS is not working),
     # it is possible to optionally add the public IPv4 and IPv6 address to the Derp-Map using:
-    ipv4: MESH_SERVER_IP_PLACEHOLDER
+    ipv4: ${MESH_SERVER_IP}
   # List of externally available DERP maps encoded in JSON
   urls:
     - https://controlplane.tailscale.com/derpmap/default
@@ -136,56 +136,6 @@ database:
     # https://www.sqlite.org/c3ref/wal_autocheckpoint.html
     # Set to 0 to disable automatic checkpointing.
     wal_autocheckpoint: 1000
-    # # Postgres config
-    # Please note that using Postgres is highly discouraged as it is only supported for legacy reasons.
-    # See database.type for more information.
-    # postgres:
-    #   # If using a Unix socket to connect to Postgres, set the socket path in the 'host' field and leave 'port' blank.
-    #   host: localhost
-    #   port: 5432
-    #   name: headscale
-    #   user: foo
-    #   pass: bar
-    #   max_open_conns: 10
-    #   max_idle_conns: 10
-    #   conn_max_idle_time_secs: 3600
-#   # If other 'sslmode' is required instead of 'require(true)' and 'disabled(false)', set the 'sslmode' you need
-#   # in the 'ssl' field. Refers to https://www.postgresql.org/docs/current/libpq-ssl.html Table 34.1.
-#   ssl: false
-
-#### TLS configuration
-##
-### Let's encrypt / ACME
-##
-## headscale supports automatically requesting and setting up
-## TLS for a domain with Let's Encrypt.
-##
-## URL to ACME directory
-#acme_url: https://acme-v02.api.letsencrypt.org/directory
-#
-## Email to register with ACME provider
-#acme_email: ""
-#
-## Domain name to request a TLS certificate for:
-#tls_letsencrypt_hostname: ""
-#
-## Path to store certificates and metadata needed by
-## letsencrypt
-## For production:
-#tls_letsencrypt_cache_dir: /var/lib/headscale/cache
-#
-## Type of ACME challenge to use, currently supported types:
-## HTTP-01 or TLS-ALPN-01
-## See: docs/ref/tls.md for more information
-#tls_letsencrypt_challenge_type: HTTP-01
-## When HTTP-01 challenge is chosen, letsencrypt must set up a
-## verification endpoint, and it will be listening on:
-## :http = port 80
-#tls_letsencrypt_listen: ":http"
-#
-### Use already defined certificates:
-#tls_cert_path: ""
-#tls_key_path: ""
 log:
   # Output formatting for logs: text or json
   format: text
@@ -210,167 +160,49 @@ policy:
 # - https://tailscale.com/kb/1081/magicdns/
 # - https://tailscale.com/blog/2021-09-private-dns-with-magicdns/
 #
-# Please note that for the DNS configuration to have any effect,
-# clients must have the `--accept-dns=true` option enabled. This is the
-# default for the Tailscale client. This option is enabled by default
-# in the Tailscale client.
-#
-# Setting _any_ of the configuration and `--accept-dns=true` on the
-# clients will integrate with the DNS manager on the client or
-# overwrite /etc/resolv.conf.
-# https://tailscale.com/kb/1235/resolv-conf
-#
-# If you want stop Headscale from managing the DNS configuration
-# all the fields under `dns` should be set to empty values.
 dns:
-  # Whether to use [MagicDNS](https://tailscale.com/kb/1081/magicdns/).
   magic_dns: true
-  # Defines the base domain to create the hostnames for MagicDNS.
-  # This domain _must_ be different from the server_url domain.
-  # `base_domain` must be a FQDN, without the trailing dot.
-  # The FQDN of the hosts will be
-  # `hostname.base_domain` (e.g., _myhost.example.com_).
-  base_domain: hamster
-  # Whether to use the local DNS settings of a node (default) or override the
-  # local DNS settings and force the use of Headscale's DNS configuration.
+  base_domain: ${MESH_BASE_DOMAIN}
   override_local_dns: true
-  # List of DNS servers to expose to clients.
   nameservers:
     global:
       - 1.1.1.1
       - 1.0.0.1
       - 2606:4700:4700::1111
       - 2606:4700:4700::1001
-      # NextDNS (see https://tailscale.com/kb/1218/nextdns/).
-      # "abc123" is example NextDNS ID, replace with yours.
-      # - https://dns.nextdns.io/abc123
-    # Split DNS (see https://tailscale.com/kb/1054/dns/),
-    # a map of domains and which DNS server to use for each.
-
     split: {}
-    # foo.bar.com:
-    #   - 1.1.1.1
-    # darp.headscale.net:
-    #   - 1.1.1.1
-    #   - 8.8.8.8
-  # Set custom DNS search domains. With MagicDNS enabled,
-  # your tailnet base_domain is always the first search domain.
   search_domains: []
-  # Extra DNS records
-  # so far only A and AAAA records are supported (on the tailscale side)
-  # See: docs/ref/dns.md
   extra_records:
-    - name: pve-work.example.com
+    - name: pve-work.${BASE_DOMAIN}
       type: A
       value: 100.64.0.3
-    - name: jellyfin.example.com
+    - name: jellyfin.${BASE_DOMAIN}
       type: A
       value: 100.64.0.14
-    - name: paperless.example.com
+    - name: paperless.${BASE_DOMAIN}
       type: A
       value: 100.64.0.14
-    - name: authentik.example.com
+    - name: authentik.${BASE_DOMAIN}
       type: A
       value: 100.64.0.14
-    - name: photoprism.example.com
+    - name: photoprism.${BASE_DOMAIN}
       type: A
       value: 100.64.0.14
-    - name: nomad.example.com
+    - name: vault.${BASE_DOMAIN}
       type: A
       value: 100.64.0.14
-    - name: vault.example.com
+    - name: consul.${BASE_DOMAIN}
       type: A
       value: 100.64.0.14
-    - name: consul.example.com
+    - name: internal.traefik.${BASE_DOMAIN}
       type: A
       value: 100.64.0.14
-    - name: internal.traefik.example.com
-      type: A
-      value: 100.64.0.14
-      #   - name: "grafana.myvpn.example.com"
-      #     type: "A"
-      #     value: "100.64.0.3"
-      #
-      #   # you can also put it in one line
-      #   - { name: "prometheus.myvpn.example.com", type: "A", value: "100.64.0.3" }
-      #
-      # Alternatively, extra DNS records can be loaded from a JSON file.
-      # Headscale processes this file on each change.
-      # extra_records_path: /var/lib/headscale/extra-records.json
-# Unix socket used for the CLI to connect without authentication
-# Note: for production you will want to set this to something like:
 
 unix_socket: /var/run/headscale/headscale.sock
 unix_socket_permission: "0770"
-#
-# headscale supports experimental OpenID connect support,
-# it is still being tested and might have some bugs, please
-# help us test it.
-# OpenID Connect
-# oidc:
-#   only_start_if_oidc_is_available: true
-#   issuer: "https://your-oidc.issuer.com/path"
-#   client_id: "your-oidc-client-id"
-#   client_secret: "your-oidc-client-secret"
-#   # Alternatively, set `client_secret_path` to read the secret from the file.
-#   # It resolves environment variables, making integration to systemd's
-#   # `LoadCredential` straightforward:
-#   client_secret_path: "${CREDENTIALS_DIRECTORY}/oidc_client_secret"
-#   # client_secret and client_secret_path are mutually exclusive.
-#
-#   # The amount of time from a node is authenticated with OpenID until it
-#   # expires and needs to reauthenticate.
-#   # Setting the value to "0" will mean no expiry.
-#   expiry: 180d
-#
-#   # Use the expiry from the token received from OpenID when the user logged
-#   # in, this will typically lead to frequent need to reauthenticate and should
-#   # only been enabled if you know what you are doing.
-#   # Note: enabling this will cause `oidc.expiry` to be ignored.
-#   use_expiry_from_token: false
-#
-#   # Customize the scopes used in the OIDC flow, defaults to "openid", "profile" and "email" and add custom query
-#   # parameters to the Authorize Endpoint request. Scopes default to "openid", "profile" and "email".
-#
-#   scope: ["openid", "profile", "email", "custom"]
-#   extra_params:
-#     domain_hint: example.com
-#
-#   # List allowed principal domains and/or users. If an authenticated user's domain is not in this list, the
-#   # authentication request will be rejected.
-#
-#   allowed_domains:
-#     - example.com
-#   # Note: Groups from keycloak have a leading '/'
-#   allowed_groups:
-#     - /headscale
-#   allowed_users:
-#     - alice@example.com
-#
-#   # Optional: PKCE (Proof Key for Code Exchange) configuration
-#   # PKCE adds an additional layer of security to the OAuth 2.0 authorization code flow
-#   # by preventing authorization code interception attacks
-#   # See https://datatracker.ietf.org/doc/html/rfc7636
-#   pkce:
-#     # Enable or disable PKCE support (default: false)
-#     enabled: false
-#     # PKCE method to use:
-#     # - plain: Use plain code verifier
-#     # - S256: Use SHA256 hashed code verifier (default, recommended)
-#     method: S256
 
-# Logtail configuration
-# Logtail is Tailscales logging and auditing infrastructure, it allows the control panel
-# to instruct tailscale nodes to log their activity to a remote server.
 logtail:
-  # Enable logtail for this headscales clients.
-  # As there is currently no support for overriding the log server in headscale, this is
-  # disabled by default. Enabling this will make your clients send logs to Tailscale Inc.
   enabled: false
-# Enabling this option makes devices prefer a random port for WireGuard traffic over the
-# default static port 41641. This option is intended as a workaround for some buggy
-# firewall devices. See https://tailscale.com/kb/1181/firewalls/ for more information.
 randomize_client_port: false
 taildrop:
   enabled: true
-

@@ -1,0 +1,21 @@
+---
+# Usage:
+#   ansible-playbook ansible/playbooks/provision.yml -e target_hosts=vpn_nl
+#   ansible-playbook ansible/playbooks/provision.yml -e target_hosts=mesh_mos
+
+- name: Provision server
+  hosts: "{{ target_hosts }}"
+  become: true
+
+  roles:
+    - role: common
+      tags: [common]
+    - role: docker
+      tags: [docker]
+    - role: tailscale
+      tags: [tailscale]
+    - role: backup
+      when: target_hosts == "mesh_mos"
+      tags: [backup]
+    - role: ufw
+      tags: [ufw]

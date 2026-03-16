@@ -1,136 +1,164 @@
 # lab-private
 
-Docker Compose infrastructure for VPS servers. Auto-deploy via GitHub Actions with self-hosted runners.
+Personal infrastructure as code: VPN server (sing-box, 10 protocols) and mesh network (headscale + headplane + caddy). Deployed with Docker Compose via GitHub Actions on self-hosted runners.
 
 ## Architecture
 
-| Server | Runner label | Services |
-|--------|-------------|----------|
-| NL (VPN_SERVER_IP_PLACEHOLDER) | `vds-vpn-nl-01` | sing-box (VLESS + Hysteria2) |
-| MOS | `vds-mesh-mos-01` | headscale + headplane + caddy |
+```mermaid
+graph TB
+    subgraph "VPN Server — NL"
+        SB[sing-box<br/>10 protocols]
+    end
 
-## Workflows
+    subgraph "Mesh Server — MOS"
+        C[Caddy<br/>reverse proxy + TLS]
+        HS[Headscale<br/>coordination + DERP]
+        HP[Headplane<br/>web UI]
+        C --> HS
+        C --> HP
+        HP --> HS
+    end
 
-- `deploy-singbox.yml` — deploy on push to `configs/sing-box/**`, `docker-compose/sing-box.yaml`
-- `deploy-mesh.yml` — deploy on push to `configs/headscale/**`, `configs/headplane/**`, `configs/caddy/**`
-- `setup-server.yml` — install dependencies (manual trigger)
+    NL -.->|Tailscale / WireGuard| MOS
 
-## Setting up a new runner
+    Client1[macOS] -->|VLESS/Hysteria2/TUIC| SB
+    Client2[iOS] -->|VLESS/Hysteria2/TUIC| SB
+    Client3[Linux] -->|VLESS/Hysteria2/TUIC| SB
 
-### 1. Create user (as root)
+    Client1 -.->|Tailscale| HS
+    Client2 -.->|Tailscale| HS
+    Client3 -.->|Tailscale| HS
+```
+
+### Protocols (VPN Server)
+
+| Protocol | Port | Transport |
+|----------|------|-----------|
+| VLESS Reality gRPC | 443/tcp | gRPC, SNI: www.microsoft.com |
+| VLESS Reality gRPC | 2053/tcp | gRPC, SNI: dl.google.com |
+| VLESS Reality gRPC | 2083/tcp | gRPC, SNI: www.samsung.com |
+| VLESS Reality gRPC | 64444/tcp | gRPC, SNI: learn.microsoft.com |
+| VLESS Reality HTTPUpgrade | 2087/tcp | HTTPUpgrade, SNI: www.logitech.com |
+| Hysteria2 + Salamander | 8443/udp | QUIC + obfuscation |
+| TUIC v5 | 8444/udp | QUIC |
+| ShadowTLS v3 + SS2022 | 8388/tcp | ShadowTLS + Shadowsocks |
+| Trojan | 8445/tcp | TLS |
+| Shadowsocks 2022 | 8389/tcp | Direct |
+
+### Mesh Server
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| Caddy | 80, 443/tcp | HTTPS reverse proxy, ACME, client config distribution |
+| Headscale | 3478/udp | STUN, embedded DERP relay |
+| Headplane | internal | Web UI for headscale management |
+
+### Backups
+
+Headscale SQLite database backed up weekly (Sunday 03:00) via systemd timer:
+- Local: `/opt/backups/headscale/` on MOS
+- Remote: copied to VPN server via Tailscale (SCP)
+- Retention: 8 weeks
+
+## Repository Structure
+
+```
+infra/
+  vpn-nl/                    # VPN server (Netherlands)
+    docker-compose.yaml
+    configs/sing-box/
+      config.json.tpl         # Server config template
+  mesh-mos/                   # Mesh server (Moscow)
+    docker-compose.yaml
+    configs/
+      headscale/config.yaml.tpl
+      headplane/config.yaml.tpl
+      caddy/Caddyfile.tpl
+clients/
+  sing-box/                   # Client configs (generated from Jsonnet)
+    lib/outbounds.libsonnet   # Outbound definitions
+    lib/route.libsonnet       # Route rules and rule sets
+    client-base.jsonnet       # macOS
+    client-mobile.jsonnet     # iOS
+    client-linux.jsonnet      # Linux
+    Makefile
+ansible/
+  roles/
+    common/                   # Base packages, locale, jsonnet
+    docker/                   # Docker CE installation
+    tailscale/                # Tailscale client management
+    backup/                   # Headscale backup timer
+    ufw/                      # Firewall rules (idempotent reset)
+  playbooks/
+    provision.yml             # Full server provisioning
+    tailscale.yml             # Tailscale install/authorize
+  inventory/
+    hosts.yml
+    group_vars/
+scripts/                      # Utility and backup scripts
+docs/                         # Documentation
+```
+
+## Quick Start
+
+### 1. Clone and configure
 
 ```bash
-useradd -m -s /bin/bash github-runner
-usermod -aG docker github-runner
+git clone <repo-url>
+cd lab-private
+cp .env.example .env          # Fill in your values
+cp ansible/inventory/hosts.yml.example ansible/inventory/hosts.yml
 ```
 
-### 2. Configure sudoers (as root)
+### 2. Set GitHub secrets
+
+Required repository secrets and variables — see `.env.example` for the full list.
+
+### 3. Provision servers (Ansible)
 
 ```bash
-echo 'github-runner ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/mkdir, /usr/bin/chown, /usr/sbin/ufw' | tee /etc/sudoers.d/github-runner
+ansible-playbook ansible/playbooks/provision.yml -e target_hosts=mesh_mos --diff
+ansible-playbook ansible/playbooks/provision.yml -e target_hosts=vpn_nl --diff
 ```
 
-### 3. Install runner (as github-runner)
+After provisioning NL, join Tailscale manually:
+```bash
+ssh nl 'tailscale up --login-server=https://<MESH_DOMAIN>'
+```
 
-Follow the instructions from GitHub: repo Settings → Actions → Runners → New self-hosted runner → Linux.
+### 4. Generate client configs
 
 ```bash
-su - github-runner
-mkdir actions-runner && cd actions-runner
-# Download and extract (commands from GitHub UI)
-curl -o actions-runner-linux-x64.tar.gz -L https://github.com/actions/runner/releases/download/v2.322.0/actions-runner-linux-x64-2.322.0.tar.gz
-tar xzf actions-runner-linux-x64.tar.gz
+cd clients/sing-box
+make        # Requires jsonnet (go-jsonnet)
 ```
 
-Register with labels matching the server:
+### 5. Deploy
 
-```bash
-./config.sh \
-  --url https://github.com/ExampleUser/lab-private \
-  --token <TOKEN_FROM_GITHUB> \
-  --name <server-hostname> \
-  --labels <server-hostname> \
-  --work _work
-```
+Push to `master` triggers auto-deploy via GitHub Actions:
 
-### 4. Install as systemd service (as root)
+- Changes in `infra/vpn-nl/` or `clients/sing-box/` → deploy to VPN server
+- Changes in `infra/mesh-mos/` or `clients/sing-box/` → deploy to Mesh server
 
-```bash
-cd /home/github-runner/actions-runner
-./svc.sh install github-runner
-./svc.sh start
-```
+Manual deploy: trigger workflows via GitHub Actions UI (`workflow_dispatch`).
 
-Verify:
+## CI/CD Pipeline
 
-```bash
-systemctl status actions.runner.*
-```
+Each deploy workflow:
 
-### 5. Install dependencies
+1. **Validate** — `docker compose config` syntax check
+2. **Generate** — Jsonnet → `.json.tpl` client templates
+3. **Render** — `envsubst` replaces `${VAR}` in all `.tpl` files
+4. **Upload artifacts** — client configs as GitHub artifacts (7 days)
+5. **Sync** — `rsync` to `/opt/lab-private/` on the server
+6. **Deploy** — `docker compose up -d`
+7. **Healthcheck** — verify all containers are running
+8. **Firewall** — idempotent UFW rules
 
-Run `setup-server.yml` workflow from GitHub: Actions → Setup server dependencies → Run workflow → select server.
+## Self-Hosted Runner Setup
 
-This installs: `rsync`, `jq`, `gettext-base` (envsubst).
+See [runner setup guide](README.md#setting-up-a-new-runner) — create user, configure sudoers, install runner, register with labels matching server hostname.
 
-### 6. Prepare deploy directory (done by setup-server workflow)
+## License
 
-If running manually:
-
-```bash
-mkdir -p /opt/lab-private
-chown -R github-runner:github-runner /opt/lab-private
-```
-
-### 7. TLS certificates (NL server only)
-
-For Hysteria2 self-signed certificate:
-
-```bash
-su - github-runner
-mkdir -p /opt/lab-private/configs/sing-box/tls
-cd /opt/lab-private/configs/sing-box/tls
-openssl req -x509 -newkey ec \
-  -pkeyopt ec_paramgen_curve:prime256v1 -days 3650 -nodes \
-  -keyout hysteria2.key -out hysteria2.crt -subj "/CN=bing.com"
-```
-
-## GitHub Secrets
-
-Required secrets (repo Settings → Secrets → Actions):
-
-| Secret | Used by |
-|--------|---------|
-| `VLESS_UUID` | sing-box |
-| `REALITY_PRIVATE_KEY` | sing-box |
-| `REALITY_SHORT_ID` | sing-box |
-| `HY2_PASSWORD` | sing-box |
-| `SALAMANDER_PASSWORD` | sing-box |
-
-NL сервер (VPN_SERVER_IP_PLACEHOLDER) — sing-box
-
-```
-sudo ufw reset
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow 22/tcp comment 'SSH'
-sudo ufw allow 443/tcp comment 'VLESS Reality gRPC'
-sudo ufw allow 8443/udp comment 'Hysteria2 Salamander'
-sudo ufw enable
-sudo ufw status verbose
-```
-
-MOS сервер (MESH_SERVER_IP_PLACEHOLDER) — headscale + caddy + DERP
-
-```
-sudo ufw reset
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow 22/tcp comment 'SSH'
-sudo ufw allow 80/tcp comment 'Caddy HTTP (ACME redirect)'
-sudo ufw allow 443/tcp comment 'Caddy HTTPS (headscale/headplane/DERP)'
-sudo ufw allow 3478/udp comment 'STUN'
-sudo ufw enable
-sudo ufw status verbose
-```
-
+MIT

@@ -1,18 +1,24 @@
 ---
 services:
   caddy:
-    image: caddy:latest
+    image: caddy:2.9-alpine
     container_name: caddy
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ../configs/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ../configs/headscale/avatars:/srv/avatars:ro
-      - ../configs/sing-box:/srv/singbox:ro
+      - ./configs/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./configs/headscale/avatars:/srv/avatars:ro
+      - ../../clients/sing-box:/srv/singbox:ro
       - caddy_data:/data
       - caddy_config:/config
+    healthcheck:
+      test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - mesh_network
     depends_on:
@@ -24,8 +30,14 @@ services:
     container_name: headscale
     restart: unless-stopped
     volumes:
-      - ../configs/headscale:/etc/headscale
+      - ./configs/headscale:/etc/headscale
       - headscale_data:/var/lib/headscale
+    healthcheck:
+      test: ["CMD", "headscale", "health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - mesh_network
     ports:
@@ -36,16 +48,22 @@ services:
     command: serve
 
   headplane:
-    image: ghcr.io/tale/headplane:latest
+    image: ghcr.io/tale/headplane:0.5.1
     container_name: headplane
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - mesh_network
     expose:
       - "3000"
     volumes:
-      - ../configs/headplane:/etc/headplane
-      - ../configs/headscale:/etc/headscale
+      - ./configs/headplane:/etc/headplane
+      - ./configs/headscale:/etc/headscale
       - headplane_data:/var/lib/headplane
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:

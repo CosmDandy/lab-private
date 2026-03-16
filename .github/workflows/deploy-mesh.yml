@@ -4,37 +4,42 @@ on:
   push:
     branches: [master]
     paths:
-      - configs/headscale/**
-      - configs/headplane/**
-      - configs/caddy/**
-      - configs/sing-box/**
-      - docker-compose/headscale.yaml
+      - infra/mesh-mos/**
+      - clients/sing-box/**
       - .github/workflows/deploy-mesh.yml
+
 jobs:
   validate:
     runs-on: [vds-mesh-mos-01]
     steps:
       - uses: actions/checkout@v6
       - name: Validate compose
-        run: docker compose -f docker-compose/headscale.yaml config --quiet
+        run: docker compose -f infra/mesh-mos/docker-compose.yaml config --quiet
+
   deploy:
     needs: validate
     runs-on: [vds-mesh-mos-01]
     environment: production
     env:
-      COMPOSE_PROJECT_DIR: /opt/lab-private
+      DEPLOY_DIR: /opt/lab-private
     steps:
       - uses: actions/checkout@v6
-      - name: Render sing-box configs
+      - name: Generate client configs from Jsonnet
+        run: make -C clients/sing-box
+      - name: Render configs
         env:
           VPN_SERVER_IP: ${{ vars.VPN_SERVER_IP }}
           VPN_DOMAIN: ${{ vars.VPN_DOMAIN }}
           MESH_DOMAIN: ${{ vars.MESH_DOMAIN }}
+          MESH_SERVER_IP: ${{ vars.MESH_SERVER_IP }}
+          BASE_DOMAIN: ${{ vars.BASE_DOMAIN }}
+          MESH_BASE_DOMAIN: ${{ vars.MESH_BASE_DOMAIN }}
           ACME_EMAIL: ${{ vars.ACME_EMAIL }}
           CADDY_VPN_USER: ${{ secrets.CADDY_VPN_USER }}
           CADDY_VPN_HASH: ${{ secrets.CADDY_VPN_HASH }}
           CADDY_MESH_USER: ${{ secrets.CADDY_MESH_USER }}
           CADDY_MESH_HASH: ${{ secrets.CADDY_MESH_HASH }}
+          HEADPLANE_COOKIE_SECRET: ${{ secrets.HEADPLANE_COOKIE_SECRET }}
           VLESS_UUID: ${{ secrets.VLESS_UUID }}
           REALITY_PRIVATE_KEY: ${{ secrets.REALITY_PRIVATE_KEY }}
           REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
@@ -46,12 +51,17 @@ jobs:
           SS_PASSWORD: ${{ secrets.SS_PASSWORD }}
           TROJAN_PASSWORD: ${{ secrets.TROJAN_PASSWORD }}
           SS_PLAIN_PASSWORD: ${{ secrets.SS_PLAIN_PASSWORD }}
-
         run: |
-          for tpl in configs/sing-box/*.json.tpl; do
+          for tpl in clients/sing-box/*.json.tpl; do
             envsubst < "$tpl" > "${tpl%.tpl}"
           done
-          for tpl in configs/caddy/*.tpl; do
+          for tpl in infra/mesh-mos/configs/caddy/*.tpl; do
+            envsubst < "$tpl" > "${tpl%.tpl}"
+          done
+          for tpl in infra/mesh-mos/configs/headplane/*.tpl; do
+            envsubst < "$tpl" > "${tpl%.tpl}"
+          done
+          for tpl in infra/mesh-mos/configs/headscale/*.tpl; do
             envsubst < "$tpl" > "${tpl%.tpl}"
           done
       - name: Sync files to deploy directory
@@ -59,26 +69,24 @@ jobs:
           rsync -a --delete \
             --exclude='.git' \
             --exclude='*.tpl' \
-            "$GITHUB_WORKSPACE/" "$COMPOSE_PROJECT_DIR/"
+            "$GITHUB_WORKSPACE/" "$DEPLOY_DIR/"
       - name: Deploy
         working-directory: /opt/lab-private
         run: |
-          docker compose -f docker-compose/headscale.yaml pull
-          docker compose -f docker-compose/headscale.yaml up -d --remove-orphans
-          docker compose -f docker-compose/headscale.yaml restart
+          docker compose -f infra/mesh-mos/docker-compose.yaml pull
+          docker compose -f infra/mesh-mos/docker-compose.yaml up -d --remove-orphans
       - name: Healthcheck
         working-directory: /opt/lab-private
         run: |
-          sleep 3
-          docker compose -f docker-compose/headscale.yaml ps
-          if docker compose -f docker-compose/headscale.yaml ps --format json | jq -e '.[] | select(.State != "running")' > /dev/null 2>&1; then
+          sleep 5
+          docker compose -f infra/mesh-mos/docker-compose.yaml ps
+          if docker compose -f infra/mesh-mos/docker-compose.yaml ps --format json | jq -e '.[] | select(.State != "running")' > /dev/null 2>&1; then
             echo "Some containers are not running!"
-            docker compose -f docker-compose/headscale.yaml logs --tail 20
+            docker compose -f infra/mesh-mos/docker-compose.yaml logs --tail 20
             exit 1
           fi
       - name: Configure firewall
         run: |
-          sudo ufw --force reset
           sudo ufw default deny incoming
           sudo ufw default allow outgoing
           sudo ufw allow 22/tcp comment 'SSH'

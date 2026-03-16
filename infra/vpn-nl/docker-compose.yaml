@@ -5,9 +5,15 @@ services:
     container_name: sing-box
     restart: unless-stopped
     environment:
-      ENABLE_DEPRECATED_LEGACY_DOMAIN_STRATEGY_OPTIONS: true
+      ENABLE_DEPRECATED_LEGACY_DOMAIN_STRATEGY_OPTIONS: "true"
     volumes:
-      - ../configs/sing-box:/etc/sing-box
+      - ./configs/sing-box:/etc/sing-box
+    healthcheck:
+      test: ["CMD", "sing-box", "check", "-c", "/etc/sing-box/config.json"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     ports:
       - "443:443/tcp"
       - "2053:2053/tcp"
