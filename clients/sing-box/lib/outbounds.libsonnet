@@ -91,6 +91,25 @@
     tls: { enabled: true, server_name: 'bing.com', insecure: true },
   },
 
+  vlessRealityVision():: {
+    type: 'vless',
+    tag: 'vless-reality-vision',
+    server: '${VPN_SERVER_IP}',
+    server_port: 8446,
+    uuid: '${VLESS_UUID}',
+    flow: 'xtls-rprx-vision',
+    tls: {
+      enabled: true,
+      server_name: 'www.microsoft.com',
+      utls: { enabled: true, fingerprint: 'chrome' },
+      reality: {
+        enabled: true,
+        public_key: '${REALITY_PUBLIC_KEY}',
+        short_id: '${REALITY_SHORT_ID}',
+      },
+    },
+  },
+
   ssPlain():: {
     type: 'shadowsocks',
     tag: 'ss-plain',
@@ -117,6 +136,7 @@
   // Common protocol outbounds (non-gRPC)
   commonProtocols:: [
     self.vlessRealityHttpupgrade(),
+    self.vlessRealityVision(),
     self.hysteria2Salamander(),
     self.tuic(),
     self.ssShadowtls(),
@@ -133,6 +153,10 @@
 
   udpTags:: ['hysteria2-salamander', 'tuic'],
   tcpTags:: ['ss-shadowtls', 'trojan', 'ss-plain'],
+
+  // All VLESS tags for vless-auto urltest group
+  vlessTagsList:: [o.tag for o in self.allGrpcVariants] + ['vless-reality-httpupgrade', 'vless-reality-vision'],
+  linuxVlessTagsList:: [o.tag for o in self.linuxGrpcVariants] + ['vless-reality-httpupgrade', 'vless-reality-vision'],
 
   selector(tags):: {
     type: 'selector',

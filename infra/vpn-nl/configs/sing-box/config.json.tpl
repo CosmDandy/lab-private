@@ -174,6 +174,23 @@
         "method": "2022-blake3-aes-128-gcm",
         "password": "${SS_PLAIN_PASSWORD}",
       },
+      {
+        "type": "vless",
+        "tag": "vless-reality-vision",
+        "listen": "::",
+        "listen_port": 8446,
+        "users": [{ "uuid": "${VLESS_UUID}", "flow": "xtls-rprx-vision" }],
+        "tls": {
+          "enabled": true,
+          "server_name": "www.microsoft.com",
+          "reality": {
+            "enabled": true,
+            "handshake": { "server": "www.microsoft.com", "server_port": 443 },
+            "private_key": "${REALITY_PRIVATE_KEY}",
+            "short_id": ["${REALITY_SHORT_ID}"],
+          },
+        },
+      },
     ],
   "outbounds":
     [

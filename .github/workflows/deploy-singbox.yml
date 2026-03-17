@@ -97,5 +97,6 @@ jobs:
           sudo ufw allow 8388/tcp comment 'ShadowTLS + Shadowsocks'
           sudo ufw allow 8445/tcp comment 'Trojan'
           sudo ufw allow 8389/tcp comment 'Shadowsocks plain'
+          sudo ufw allow 8446/tcp comment 'VLESS Reality Vision'
           sudo ufw --force enable
           sudo ufw status verbose

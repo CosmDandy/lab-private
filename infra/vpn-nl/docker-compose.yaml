@@ -25,6 +25,7 @@ services:
       - "8388:8388/tcp"
       - "8445:8445/tcp"
       - "8389:8389/tcp"
+      - "8446:8446/tcp"
     cap_add:
       - NET_ADMIN
     command: run -c /etc/sing-box/config.json

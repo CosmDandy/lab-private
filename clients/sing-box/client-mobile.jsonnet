@@ -24,7 +24,7 @@ local route = import 'lib/route.libsonnet';
       route_exclude_address: route.excludeAddresses,
     },
   ],
-  local vlessTags = [o.tag for o in outbounds.allGrpcVariants] + ['vless-reality-httpupgrade'],
+  local vlessTags = outbounds.vlessTagsList,
   outbounds:
     [outbounds.selector(outbounds.allTags)]
     + [outbounds.urltest(outbounds.allTags, '10m')]
@@ -35,4 +35,13 @@ local route = import 'lib/route.libsonnet';
     + outbounds.commonProtocols
     + [outbounds.direct()],
   route: route.base(),
+  experimental: {
+    clash_api: {
+      external_controller: '127.0.0.1:9090',
+      external_ui: 'ui',
+      external_ui_download_url: 'https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip',
+      external_ui_download_detour: 'direct',
+    },
+    cache_file: { enabled: true, path: 'cache.db' },
+  },
 }
