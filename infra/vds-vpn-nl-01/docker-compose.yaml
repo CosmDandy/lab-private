@@ -1,4 +1,5 @@
----
+name: vds-vpn-nl-01
+
 services:
   sing-box:
     image: ghcr.io/sagernet/sing-box:latest

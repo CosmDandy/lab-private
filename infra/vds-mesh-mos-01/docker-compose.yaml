@@ -1,4 +1,5 @@
----
+name: vds-mesh-mos-01
+
 services:
   caddy:
     image: caddy:2.9-alpine

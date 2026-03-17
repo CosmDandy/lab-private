@@ -1,5 +1,4 @@
 name: "Deploy VPN (reusable)"
-
 on:
   workflow_call:
     inputs:
@@ -15,7 +14,6 @@ on:
       ref:
         type: string
         default: ''
-
 jobs:
   validate:
     runs-on: ${{ inputs.runner }}
@@ -23,10 +21,8 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || github.sha }}
-
       - name: Validate compose
         run: docker compose -f infra/${{ inputs.server }}/docker-compose.yaml config --quiet
-
   deploy:
     needs: validate
     runs-on: ${{ inputs.runner }}
@@ -38,7 +34,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || github.sha }}
-
       - name: Generate configs
         env:
           VPN_SERVER_IP: ${{ vars.VPN_SERVER_IP }}
@@ -59,14 +54,12 @@ jobs:
                      infra/${{ inputs.server }}/client/*.json.tpl; do
             envsubst < "$tpl" > "${tpl%.tpl}"
           done
-
       - name: Upload client configs
         uses: actions/upload-artifact@v7
         with:
           name: sing-box-client-configs-${{ inputs.environment }}
           path: infra/${{ inputs.server }}/client/client-*.json
           retention-days: 7
-
       - name: Sync
         run: |
           rsync -a --delete \
@@ -75,13 +68,11 @@ jobs:
             --exclude='*.jsonnet' \
             --exclude='infra/${{ inputs.server }}/configs/sing-box/tls/' \
             "$GITHUB_WORKSPACE/" "$DEPLOY_DIR/"
-
       - name: Deploy
         working-directory: /opt/lab-private
         run: |
           docker compose -f "$COMPOSE_FILE" pull
           docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
-
       - name: Verify
         working-directory: /opt/lab-private
         run: |
@@ -93,6 +84,5 @@ jobs:
             docker compose -f "$COMPOSE_FILE" logs --tail 20
             exit 1
           }
-
       - name: Firewall
         run: bash infra/${{ inputs.server }}/firewall.sh

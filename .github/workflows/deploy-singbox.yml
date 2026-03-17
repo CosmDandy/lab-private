@@ -1,5 +1,4 @@
 name: "Deploy: vds-vpn-nl-01"
-
 on:
   workflow_dispatch:
     inputs:
@@ -13,13 +12,12 @@ on:
       - clients/sing-box/lib/**
       - .github/workflows/deploy-singbox.yml
       - .github/workflows/_deploy-vpn.yml
-
 jobs:
   deploy:
     uses: ./.github/workflows/_deploy-vpn.yml
     with:
       runner: vds-vpn-nl-01
-      environment: vds-vpn-nl-01
+      environment: production
       server: vds-vpn-nl-01
       ref: ${{ inputs.ref || '' }}
     secrets: inherit
