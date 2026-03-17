@@ -13,6 +13,13 @@ output "server_name" {
   value       = hcloud_server.vpn.name
 }
 
+output "dns_records" {
+  description = "Created DNS records"
+  value = {
+    for k, r in cloudflare_record.vpn : k => r.hostname
+  }
+}
+
 output "ansible_inventory_snippet" {
   description = "Paste this into ansible/inventory/hosts.yml"
   value = <<-EOT

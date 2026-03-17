@@ -32,3 +32,26 @@ variable "image" {
   type        = string
   default     = "ubuntu-24.04"
 }
+
+# Cloudflare
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token (Zone:DNS:Edit permissions)"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_zone_id" {
+  description = "Cloudflare Zone ID (Dashboard → your domain → right sidebar)"
+  type        = string
+}
+
+variable "dns_records" {
+  description = "DNS A-records to create for the VPN server"
+  type = list(object({
+    name    = string
+    comment = string
+  }))
+  default = [
+    { name = "vpn", comment = "VPN server (Helsinki)" },
+  ]
+}
