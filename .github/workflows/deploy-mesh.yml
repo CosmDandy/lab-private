@@ -1,4 +1,4 @@
-name: "Deploy: headscale"
+name: "Deploy: vds-mesh-mos-01"
 on:
   workflow_dispatch:
   push:
@@ -52,9 +52,9 @@ jobs:
           TROJAN_PASSWORD: ${{ secrets.TROJAN_PASSWORD }}
           SS_PLAIN_PASSWORD: ${{ secrets.SS_PLAIN_PASSWORD }}
         run: |
-          make -C clients/sing-box
+          make -C clients/sing-box SERVER=vpn-nl
           for tpl in \
-            clients/sing-box/*.json.tpl \
+            infra/vpn-nl/client/*.json.tpl \
             infra/mesh-mos/configs/caddy/*.tpl \
             infra/mesh-mos/configs/headplane/*.tpl \
             infra/mesh-mos/configs/headscale/*.tpl; do

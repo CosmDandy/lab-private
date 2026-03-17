@@ -1,4 +1,4 @@
-name: "Deploy: sing-box"
+name: "Deploy: vds-vpn-nl-01"
 
 on:
   workflow_dispatch:
