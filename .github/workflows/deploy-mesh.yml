@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
     paths:
-      - infra/mesh-mos/**
+      - infra/vds-mesh-mos-01/**
       - clients/sing-box/**
       - .github/workflows/deploy-mesh.yml
 
@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Validate compose
-        run: docker compose -f infra/mesh-mos/docker-compose.yaml config --quiet
+        run: docker compose -f infra/vds-mesh-mos-01/docker-compose.yaml config --quiet
 
   deploy:
     needs: validate
@@ -22,7 +22,7 @@ jobs:
     environment: production
     env:
       DEPLOY_DIR: /opt/lab-private
-      COMPOSE_FILE: infra/mesh-mos/docker-compose.yaml
+      COMPOSE_FILE: infra/vds-mesh-mos-01/docker-compose.yaml
     steps:
       - uses: actions/checkout@v6
 
@@ -52,12 +52,12 @@ jobs:
           TROJAN_PASSWORD: ${{ secrets.TROJAN_PASSWORD }}
           SS_PLAIN_PASSWORD: ${{ secrets.SS_PLAIN_PASSWORD }}
         run: |
-          make -C clients/sing-box SERVER=vpn-nl
+          make -C clients/sing-box SERVER=vds-vpn-nl-01
           for tpl in \
-            infra/vpn-nl/client/*.json.tpl \
-            infra/mesh-mos/configs/caddy/*.tpl \
-            infra/mesh-mos/configs/headplane/*.tpl \
-            infra/mesh-mos/configs/headscale/*.tpl; do
+            infra/vds-vpn-nl-01/client/*.json.tpl \
+            infra/vds-mesh-mos-01/configs/caddy/*.tpl \
+            infra/vds-mesh-mos-01/configs/headplane/*.tpl \
+            infra/vds-mesh-mos-01/configs/headscale/*.tpl; do
             envsubst < "$tpl" > "${tpl%.tpl}"
           done
 

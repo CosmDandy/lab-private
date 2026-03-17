@@ -11,7 +11,7 @@ on:
         required: true
       server:
         type: string
-        default: vpn-nl
+        default: vds-vpn-nl-01
       ref:
         type: string
         default: ''

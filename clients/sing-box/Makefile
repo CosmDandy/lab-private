@@ -1,5 +1,5 @@
 JSONNET    ?= jsonnet
-SERVER     ?= vpn-nl
+SERVER     ?= vds-vpn-nl-01
 CLIENT_DIR := ../../infra/$(SERVER)/client
 SOURCES    := $(wildcard $(CLIENT_DIR)/client-*.jsonnet)
 TARGETS    := $(SOURCES:.jsonnet=.json.tpl)

@@ -9,7 +9,7 @@ on:
   push:
     branches: [master]
     paths:
-      - infra/vpn-nl/**
+      - infra/vds-vpn-nl-01/**
       - clients/sing-box/lib/**
       - .github/workflows/deploy-singbox.yml
       - .github/workflows/_deploy-vpn.yml
@@ -20,6 +20,6 @@ jobs:
     with:
       runner: vds-vpn-nl-01
       environment: vds-vpn-nl-01
-      server: vpn-nl
+      server: vds-vpn-nl-01
       ref: ${{ inputs.ref || '' }}
     secrets: inherit
