@@ -9,21 +9,15 @@ on:
       - .github/workflows/deploy-mesh.yml
 
 jobs:
-  validate:
-    runs-on: [vds-mesh-mos-01]
-    steps:
-      - uses: actions/checkout@v6
-      - name: Validate compose
-        run: docker compose -f infra/mesh-mos/docker-compose.yaml config --quiet
-
   deploy:
-    needs: validate
     runs-on: [vds-mesh-mos-01]
     environment: production
     env:
       DEPLOY_DIR: /opt/lab-private
     steps:
       - uses: actions/checkout@v6
+      - name: Validate compose
+        run: docker compose -f infra/mesh-mos/docker-compose.yaml config --quiet
       - name: Generate client configs from Jsonnet
         run: make -C clients/sing-box
       - name: Render configs
@@ -78,7 +72,7 @@ jobs:
       - name: Healthcheck
         working-directory: /opt/lab-private
         run: |
-          sleep 5
+          sleep 2
           docker compose -f infra/mesh-mos/docker-compose.yaml ps
           if docker compose -f infra/mesh-mos/docker-compose.yaml ps --format json | jq -e '.[] | select(.State != "running")' > /dev/null 2>&1; then
             echo "Some containers are not running!"
