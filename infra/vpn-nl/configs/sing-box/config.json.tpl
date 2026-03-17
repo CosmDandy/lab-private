@@ -41,7 +41,7 @@
                 "short_id": ["${REALITY_SHORT_ID}"],
               },
           },
-        "transport": { "type": "grpc", "service_name": "cdn" },
+        "transport": { "type": "grpc", "service_name": "grpc" },
       },
       {
         "type": "vless",
@@ -62,7 +62,7 @@
                 "short_id": ["${REALITY_SHORT_ID}"],
               },
           },
-        "transport": { "type": "grpc", "service_name": "api" },
+        "transport": { "type": "grpc", "service_name": "grpc" },
       },
       {
         "type": "vless",
@@ -83,7 +83,7 @@
                 "short_id": ["${REALITY_SHORT_ID}"],
               },
           },
-        "transport": { "type": "grpc", "service_name": "update" },
+        "transport": { "type": "grpc", "service_name": "grpc" },
       },
       {
         "type": "vless",
