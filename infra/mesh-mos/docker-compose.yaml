@@ -10,7 +10,7 @@ services:
     volumes:
       - ./configs/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./configs/headscale/avatars:/srv/avatars:ro
-      - ../../clients/sing-box:/srv/singbox:ro
+      - ../../infra/vpn-nl/client:/srv/singbox:ro
       - caddy_data:/data
       - caddy_config:/config
     healthcheck:
