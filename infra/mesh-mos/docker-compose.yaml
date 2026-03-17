@@ -29,6 +29,9 @@ services:
     image: headscale/headscale:0.27.0
     container_name: headscale
     restart: unless-stopped
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     volumes:
       - ./configs/headscale:/etc/headscale
       - headscale_data:/var/lib/headscale

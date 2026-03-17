@@ -79,7 +79,7 @@ jobs:
         run: |
           timeout 30 bash -c '
             until docker compose -f "$COMPOSE_FILE" ps --format json 2>/dev/null \
-              | jq -e "[.[] | select(.State != \"running\")] | length == 0" > /dev/null 2>&1
+              | jq -se "[.[] | select(.State != \"running\")] | length == 0" > /dev/null 2>&1
             do sleep 1; done
           ' || {
             docker compose -f "$COMPOSE_FILE" logs --tail 20
