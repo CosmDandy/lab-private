@@ -1,13 +1,15 @@
-JSONNET ?= jsonnet
-SOURCES := $(wildcard client-*.jsonnet)
-TARGETS := $(SOURCES:.jsonnet=.json.tpl)
+JSONNET    ?= jsonnet
+SERVER     ?= vpn-nl
+CLIENT_DIR := ../../infra/$(SERVER)/client
+SOURCES    := $(wildcard $(CLIENT_DIR)/client-*.jsonnet)
+TARGETS    := $(SOURCES:.jsonnet=.json.tpl)
 
 .PHONY: all clean
 
 all: $(TARGETS)
 
-%.json.tpl: %.jsonnet lib/outbounds.libsonnet lib/route.libsonnet
-	$(JSONNET) -o $@ $<
+$(CLIENT_DIR)/%.json.tpl: $(CLIENT_DIR)/%.jsonnet lib/outbounds.libsonnet lib/route.libsonnet
+	$(JSONNET) --jpath . -o $@ $<
 
 clean:
-	rm -f $(TARGETS)
+	rm -f $(CLIENT_DIR)/client-*.json.tpl
