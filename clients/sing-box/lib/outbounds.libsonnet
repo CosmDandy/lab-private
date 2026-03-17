@@ -105,9 +105,9 @@
   // Predefined gRPC variants
   allGrpcVariants:: [
     self.vlessRealityGrpc('vless-reality-grpc', 443, 'www.microsoft.com', 'chrome', 'grpc'),
-    self.vlessRealityGrpc('vless-reality-grpc-2053', 2053, 'dl.google.com', 'firefox', 'cdn'),
-    self.vlessRealityGrpc('vless-reality-grpc-2083', 2083, 'www.samsung.com', 'safari', 'api'),
-    self.vlessRealityGrpc('vless-reality-grpc-64444', 64444, 'learn.microsoft.com', 'edge', 'update'),
+    self.vlessRealityGrpc('vless-reality-grpc-2053', 2053, 'dl.google.com', 'chrome', 'cdn'),
+    self.vlessRealityGrpc('vless-reality-grpc-2083', 2083, 'www.samsung.com', 'chrome', 'api'),
+    self.vlessRealityGrpc('vless-reality-grpc-64444', 64444, 'learn.microsoft.com', 'chrome', 'update'),
   ],
 
   linuxGrpcVariants:: [
