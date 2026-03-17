@@ -1,0 +1,8 @@
+hcloud_token   = "your-hetzner-api-token"
+ssh_public_key = "ssh-ed25519 AAAA... user@host"
+
+# Optional overrides (defaults are already set):
+# server_name = "vds-vpn-hel-01"
+# server_type = "cpx22"
+# location    = "hel1"
+# image       = "ubuntu-24.04"
