@@ -131,16 +131,19 @@
   // Linux outbound tags (1 gRPC)
   linuxTags:: [o.tag for o in self.linuxGrpcVariants + self.commonProtocols if o.tag != 'shadowtls-out'],
 
+  udpTags:: ['hysteria2-salamander', 'tuic'],
+  tcpTags:: ['ss-shadowtls', 'trojan', 'ss-plain'],
+
   selector(tags):: {
     type: 'selector',
     tag: 'proxy',
-    outbounds: ['auto'] + tags,
+    outbounds: ['auto', 'vless-auto', 'udp-auto', 'tcp-auto'] + tags,
     default: 'hysteria2-salamander',
   },
 
-  urltest(tags, interval='1m'):: {
+  urltest(tags, interval='1m', tag='auto'):: {
     type: 'urltest',
-    tag: 'auto',
+    tag: tag,
     outbounds: tags,
     url: 'https://www.gstatic.com/generate_204',
     interval: interval,

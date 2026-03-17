@@ -24,9 +24,13 @@ local route = import 'lib/route.libsonnet';
       route_exclude_address: route.excludeAddresses,
     },
   ],
+  local vlessTags = [o.tag for o in outbounds.allGrpcVariants] + ['vless-reality-httpupgrade'],
   outbounds:
     [outbounds.selector(outbounds.allTags)]
     + [outbounds.urltest(outbounds.allTags, '10m')]
+    + [outbounds.urltest(vlessTags, '10m', 'vless-auto')]
+    + [outbounds.urltest(outbounds.udpTags, '10m', 'udp-auto')]
+    + [outbounds.urltest(outbounds.tcpTags, '10m', 'tcp-auto')]
     + outbounds.allGrpcVariants
     + outbounds.commonProtocols
     + [outbounds.direct()],

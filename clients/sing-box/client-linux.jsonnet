@@ -31,9 +31,13 @@ local route = import 'lib/route.libsonnet';
       listen_port: 7890,
     },
   ],
+  local vlessTags = [o.tag for o in outbounds.linuxGrpcVariants] + ['vless-reality-httpupgrade'],
   outbounds:
     [outbounds.selector(outbounds.linuxTags)]
     + [outbounds.urltest(outbounds.linuxTags)]
+    + [outbounds.urltest(vlessTags, tag='vless-auto')]
+    + [outbounds.urltest(outbounds.udpTags, tag='udp-auto')]
+    + [outbounds.urltest(outbounds.tcpTags, tag='tcp-auto')]
     + outbounds.linuxGrpcVariants
     + outbounds.commonProtocols
     + [outbounds.direct()],

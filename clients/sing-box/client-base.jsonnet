@@ -25,9 +25,13 @@ local route = import 'lib/route.libsonnet';
       exclude_interface: ['utun4'],
     },
   ],
+  local vlessTags = [o.tag for o in outbounds.allGrpcVariants] + ['vless-reality-httpupgrade'],
   outbounds:
     [outbounds.selector(outbounds.allTags)]
     + [outbounds.urltest(outbounds.allTags)]
+    + [outbounds.urltest(vlessTags, tag='vless-auto')]
+    + [outbounds.urltest(outbounds.udpTags, tag='udp-auto')]
+    + [outbounds.urltest(outbounds.tcpTags, tag='tcp-auto')]
     + outbounds.allGrpcVariants
     + outbounds.commonProtocols
     + [outbounds.direct()],
