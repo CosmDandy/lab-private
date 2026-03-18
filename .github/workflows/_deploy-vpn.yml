@@ -68,6 +68,19 @@ jobs:
             --exclude='*.jsonnet' \
             --exclude='infra/${{ inputs.server }}/configs/sing-box/tls/' \
             "$GITHUB_WORKSPACE/" "$DEPLOY_DIR/"
+      - name: Generate TLS cert
+        run: |
+          cert_dir="$DEPLOY_DIR/infra/${{ inputs.server }}/configs/sing-box/tls"
+          if [ ! -f "$cert_dir/hysteria2.crt" ]; then
+            mkdir -p "$cert_dir"
+            openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 \
+              -days 3650 -nodes \
+              -keyout "$cert_dir/hysteria2.key" \
+              -out  "$cert_dir/hysteria2.crt" \
+              -subj "/CN=hysteria2" -quiet
+            echo "Generated new TLS cert"
+          fi
+
       - name: Deploy
         working-directory: /opt/lab-private
         run: |
