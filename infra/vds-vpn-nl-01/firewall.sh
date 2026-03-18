@@ -4,6 +4,7 @@ set -euo pipefail
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow 22/tcp    comment 'SSH'
+sudo ufw allow 80/tcp    comment 'Caddy config server'
 sudo ufw allow 443/tcp   comment 'VLESS Reality gRPC'
 sudo ufw allow 2053/tcp  comment 'VLESS Reality gRPC'
 sudo ufw allow 2083/tcp  comment 'VLESS Reality gRPC'

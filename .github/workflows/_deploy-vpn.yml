@@ -37,6 +37,9 @@ jobs:
       - name: Generate configs
         env:
           VPN_SERVER_IP: ${{ vars.VPN_SERVER_IP }}
+          CONFIG_DOMAIN: ${{ vars.CONFIG_DOMAIN }}
+          CADDY_CONFIG_USER: ${{ secrets.CADDY_CONFIG_USER }}
+          CADDY_CONFIG_HASH: ${{ secrets.CADDY_CONFIG_HASH }}
           VLESS_UUID: ${{ secrets.VLESS_UUID }}
           REALITY_PRIVATE_KEY: ${{ secrets.REALITY_PRIVATE_KEY }}
           REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
@@ -51,6 +54,7 @@ jobs:
         run: |
           make -C clients/sing-box SERVER=${{ inputs.server }}
           for tpl in infra/${{ inputs.server }}/configs/sing-box/*.tpl \
+                     infra/${{ inputs.server }}/configs/caddy/*.tpl \
                      infra/${{ inputs.server }}/client/*.json.tpl; do
             envsubst < "$tpl" > "${tpl%.tpl}"
           done
