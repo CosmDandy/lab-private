@@ -46,7 +46,7 @@ if [[ "$ENV" == *vpn* ]]; then
   done
 
   echo "── VPN variables"
-  for v in DOMAIN; do
+  for v in DOMAIN ACME_EMAIL VPN_SERVER_IP REALITY_PUBLIC_KEY; do
     set_var "$v"
   done
 fi

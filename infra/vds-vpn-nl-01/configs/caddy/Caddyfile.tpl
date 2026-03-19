@@ -1,5 +1,5 @@
 {
-	auto_https off
+	email ${ACME_EMAIL}
 }
 
 ${DOMAIN} {

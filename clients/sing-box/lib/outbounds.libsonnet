@@ -43,7 +43,7 @@
     type: 'hysteria2',
     tag: 'hysteria2-salamander',
     server: '${VPN_SERVER_IP}',
-    server_port: 8443,
+    server_port: 443,
     password: '${HY2_PASSWORD}',
     tls: { enabled: true, server_name: 'bing.com', insecure: true },
     obfs: { type: 'salamander', password: '${SALAMANDER_PASSWORD}' },
@@ -123,14 +123,13 @@
 
   // Predefined gRPC variants
   allGrpcVariants:: [
-    self.vlessRealityGrpc('vless-reality-grpc', 443, 'www.microsoft.com'),
     self.vlessRealityGrpc('vless-reality-grpc-2053', 2053, 'dl.google.com'),
     self.vlessRealityGrpc('vless-reality-grpc-2083', 2083, 'www.samsung.com'),
     self.vlessRealityGrpc('vless-reality-grpc-64444', 64444, 'learn.microsoft.com'),
   ],
 
   linuxGrpcVariants:: [
-    self.vlessRealityGrpc('vless-reality-grpc', 443, 'www.microsoft.com', 'chrome', 'grpc'),
+    self.vlessRealityGrpc('vless-reality-grpc-2053', 2053, 'dl.google.com', 'chrome', 'grpc'),
   ],
 
   // Common protocol outbounds (non-gRPC)
