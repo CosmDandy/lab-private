@@ -2,9 +2,9 @@
 	auto_https off
 }
 
-${CONFIG_DOMAIN} {
+${DOMAIN} {
 	basicauth {
-		${CADDY_CONFIG_USER} ${CADDY_CONFIG_HASH}
+		${CADDY_USER} ${CADDY_HASH}
 	}
 	root * /srv/configs
 	file_server

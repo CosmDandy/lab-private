@@ -6,3 +6,4 @@ clients/sing-box/*.json.tpl
 # Ansible role binary archives
 ansible/roles/*/files/*.tgz
 ansible/roles/*/files/*.zip
+secrets/

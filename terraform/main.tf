@@ -1,6 +1,7 @@
 locals {
   firewall_rules = [
     { protocol = "tcp", port = "22",    description = "SSH" },
+    { protocol = "tcp", port = "80",    description = "Caddy config server" },
     { protocol = "tcp", port = "443",   description = "VLESS Reality gRPC" },
     { protocol = "tcp", port = "2053",  description = "VLESS Reality gRPC" },
     { protocol = "tcp", port = "2083",  description = "VLESS Reality gRPC" },

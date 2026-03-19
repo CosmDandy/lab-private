@@ -8,7 +8,7 @@
 #
 # https://myheadscale.example.com:443
 #
-server_url: https://${MESH_DOMAIN}/
+server_url: https://${DOMAIN}/
 # Address to listen to / bind to on the server
 #
 # For production:
@@ -86,7 +86,7 @@ derp:
     automatically_add_embedded_derp_region: true
     # For better connection stability (especially when using an Exit-Node and DNS is not working),
     # it is possible to optionally add the public IPv4 and IPv6 address to the Derp-Map using:
-    ipv4: ${MESH_SERVER_IP}
+    ipv4: ${SERVER_IP}
   # List of externally available DERP maps encoded in JSON
   urls:
     - https://controlplane.tailscale.com/derpmap/default
@@ -162,7 +162,7 @@ policy:
 #
 dns:
   magic_dns: true
-  base_domain: ${MESH_BASE_DOMAIN}
+  base_domain: hamster
   override_local_dns: true
   nameservers:
     global:
@@ -172,31 +172,7 @@ dns:
       - 2606:4700:4700::1001
     split: {}
   search_domains: []
-  extra_records:
-    - name: pve-work.${BASE_DOMAIN}
-      type: A
-      value: 100.64.0.3
-    - name: jellyfin.${BASE_DOMAIN}
-      type: A
-      value: 100.64.0.14
-    - name: paperless.${BASE_DOMAIN}
-      type: A
-      value: 100.64.0.14
-    - name: authentik.${BASE_DOMAIN}
-      type: A
-      value: 100.64.0.14
-    - name: photoprism.${BASE_DOMAIN}
-      type: A
-      value: 100.64.0.14
-    - name: vault.${BASE_DOMAIN}
-      type: A
-      value: 100.64.0.14
-    - name: consul.${BASE_DOMAIN}
-      type: A
-      value: 100.64.0.14
-    - name: internal.traefik.${BASE_DOMAIN}
-      type: A
-      value: 100.64.0.14
+  extra_records: []
 
 unix_socket: /var/run/headscale/headscale.sock
 unix_socket_permission: "0770"

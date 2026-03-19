@@ -5,7 +5,7 @@ server:
 
   # The secret used to encode and decode web sessions
   # Ensure that this is exactly 32 characters long
-  cookie_secret: "${HEADPLANE_COOKIE_SECRET}"
+  cookie_secret: "${COOKIE_SECRET}"
 
   # Should the cookies only work over HTTPS?
   # Set to false if running via HTTP without a proxy

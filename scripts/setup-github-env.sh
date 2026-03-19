@@ -34,31 +34,31 @@ set_var()    { gh variable set "$1" --env "$ENV" --body "$(get_var "$1")" --repo
 gh api "repos/$REPO/environments/$ENV" --method PUT --silent
 echo "── Environment: $ENV  ($REPO)"
 
-# ── VPN secrets (required for all envs) ──────────────────────────────────────
-echo "── VPN secrets"
-for s in \
-  VLESS_UUID REALITY_PRIVATE_KEY REALITY_SHORT_ID \
-  HY2_PASSWORD SALAMANDER_PASSWORD TUIC_PASSWORD \
-  SHADOWTLS_PASSWORD SS_PASSWORD TROJAN_PASSWORD SS_PLAIN_PASSWORD \
-  CADDY_CONFIG_USER CADDY_CONFIG_HASH
-do
-  set_secret "$s"
-done
+if [[ "$ENV" == *vpn* ]]; then
+  echo "── VPN secrets"
+  for s in \
+    VLESS_UUID REALITY_PRIVATE_KEY REALITY_SHORT_ID \
+    HY2_PASSWORD SALAMANDER_PASSWORD TUIC_PASSWORD \
+    SHADOWTLS_PASSWORD SS_PASSWORD TROJAN_PASSWORD SS_PLAIN_PASSWORD \
+    CADDY_USER CADDY_HASH
+  do
+    set_secret "$s"
+  done
 
-echo "── VPN variables"
-for v in VPN_SERVER_IP REALITY_PUBLIC_KEY CONFIG_DOMAIN; do
-  set_var "$v"
-done
+  echo "── VPN variables"
+  for v in DOMAIN; do
+    set_var "$v"
+  done
+fi
 
-# ── Mesh extras (only for mesh environments) ──────────────────────────────────
 if [[ "$ENV" == *mesh* ]]; then
   echo "── Mesh secrets"
-  for s in CADDY_VPN_USER CADDY_VPN_HASH CADDY_MESH_USER CADDY_MESH_HASH HEADPLANE_COOKIE_SECRET; do
+  for s in CADDY_USER CADDY_HASH COOKIE_SECRET; do
     set_secret "$s"
   done
 
   echo "── Mesh variables"
-  for v in VPN_DOMAIN MESH_DOMAIN MESH_SERVER_IP BASE_DOMAIN MESH_BASE_DOMAIN ACME_EMAIL; do
+  for v in DOMAIN SERVER_IP ACME_EMAIL; do
     set_var "$v"
   done
 fi

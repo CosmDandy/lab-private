@@ -17,7 +17,7 @@ jobs:
     uses: ./.github/workflows/_deploy-vpn.yml
     with:
       runner: vds-vpn-nl-01
-      environment: production
+      environment: vds-vpn-nl-01
       server: vds-vpn-nl-01
       ref: ${{ inputs.ref || '' }}
     secrets: inherit
