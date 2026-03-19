@@ -4,6 +4,7 @@ local directTags = ['geosite-ru', 'geoip-ru', 'geosite-yandex', 'geosite-mailru'
 local rules = [
   { action: 'sniff' },
   { protocol: 'dns', action: 'hijack-dns' },
+  { ip_cidr: ['${VPN_SERVER_IP}/32'], action: 'route', outbound: 'direct' },
   { ip_is_private: true, action: 'route', outbound: 'direct' },
   { rule_set: blockTags, action: 'reject' },
   { rule_set: directTags, action: 'route', outbound: 'direct' },
