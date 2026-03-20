@@ -2,10 +2,6 @@
 .env
 secrets/
 
-# Ansible
-ansible/roles/*/files/*.tgz
-ansible/roles/*/files/*.zip
-
 # Sing-box TLS certs
 configs/vpn/*/sing-box/tls/
 

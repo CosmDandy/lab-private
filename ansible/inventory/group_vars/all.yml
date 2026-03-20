@@ -1,6 +1,0 @@
----
-ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o PreferredAuthentications=publickey"
-ansible_python_interpreter: /usr/bin/python3
-
-jsonnet_version: v0.21.0
-mesh_url: "https://mesh.cosmdandy.ru"
