@@ -23,7 +23,15 @@ packages:
   - iperf3
   - sqlite3
 
+write_files:
+  - path: /etc/sysctl.d/99-udp-buffers.conf
+    content: |
+      net.core.rmem_max=7500000
+      net.core.wmem_max=7500000
+
 runcmd:
+  - sysctl --system
+
   # Enable and start Docker
   - systemctl enable docker
   - systemctl start docker
