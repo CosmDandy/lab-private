@@ -37,7 +37,7 @@ jobs:
 
       - name: Sync configs to deploy directory
         run: |
-          rsync -a --delete \
+          sudo rsync -a --delete \
             --exclude='*.tpl' \
             "$CONFIG_DIR/" "$COMPOSE_PROJECT_DIR/"
 

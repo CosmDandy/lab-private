@@ -4,7 +4,7 @@ users:
   - name: github-runner
     groups: docker
     shell: /bin/bash
-    sudo: "ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/mkdir, /usr/bin/chown, /usr/sbin/ufw"
+    sudo: "ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/mkdir, /usr/bin/chown, /usr/bin/rsync, /usr/sbin/ufw"
   - name: root
     ssh_authorized_keys:
 %{ for key in ssh_public_keys ~}

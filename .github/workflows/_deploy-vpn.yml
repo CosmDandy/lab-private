@@ -23,14 +23,19 @@ jobs:
               x86_64)  ARCH=x86_64 ;;
               aarch64) ARCH=arm64 ;;
             esac
+            mkdir -p "$HOME/.local/bin"
             curl -sLo /tmp/go-jsonnet.tar.gz \
               "https://github.com/google/go-jsonnet/releases/download/v0.21.0/go-jsonnet_Linux_${ARCH}.tar.gz"
-            sudo tar -xzf /tmp/go-jsonnet.tar.gz -C /usr/local/bin/ jsonnet
+            tar -xzf /tmp/go-jsonnet.tar.gz -C "$HOME/.local/bin/" jsonnet
             rm /tmp/go-jsonnet.tar.gz
+            echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           fi
 
       - name: Generate client configs
-        run: make -C templates/sing-box
+        run: |
+          for src in $CONFIG_DIR/sing-box/client-*.jsonnet; do
+            jsonnet --jpath templates/sing-box -o "${src%.jsonnet}.json.tpl" "$src"
+          done
 
       - name: Validate compose
         run: docker compose -f $CONFIG_DIR/docker-compose.yaml config --quiet
@@ -76,7 +81,7 @@ jobs:
 
       - name: Sync configs to deploy directory
         run: |
-          rsync -a --delete \
+          sudo rsync -a --delete \
             --exclude='*.tpl' \
             --exclude='*.jsonnet' \
             --exclude='tls/' \
