@@ -67,18 +67,6 @@ jobs:
             envsubst < "$tpl" > "${tpl%.tpl}"
           done
 
-      - name: Upload client configs
-        uses: actions/upload-artifact@v7
-        with:
-          name: sing-box-client-${{ inputs.server }}
-          path: ${{ env.CONFIG_DIR }}/sing-box/client-*.json
-          retention-days: 7
-
-      - name: Prepare client configs
-        run: |
-          mkdir -p "$CONFIG_DIR/client"
-          cp $CONFIG_DIR/sing-box/client-*.json "$CONFIG_DIR/client/" 2>/dev/null || true
-
       - name: Sync configs to deploy directory
         run: |
           sudo rsync -a --delete \
