@@ -1,0 +1,4 @@
+# False positives: Terraform variable references (not actual secrets)
+1237fe68dbb4002c00d32fdf190340f06b34325a:terraform/main.tf:generic-api-key:105
+1237fe68dbb4002c00d32fdf190340f06b34325a:terraform/secrets.tf:generic-api-key:177
+1237fe68dbb4002c00d32fdf190340f06b34325a:terraform/versions.tf:generic-api-key:51
