@@ -41,6 +41,47 @@ jobs:
             --exclude='*.tpl' \
             "$CONFIG_DIR/" "$COMPOSE_PROJECT_DIR/"
 
+      - name: Restore Headscale data from S3
+        env:
+          S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+          S3_BUCKET: ${{ vars.S3_BUCKET }}
+          S3_ENDPOINT: ${{ vars.S3_ENDPOINT }}
+        run: |
+          # Create volume if it doesn't exist
+          docker volume create headscale_data 2>/dev/null || true
+          VOLUME_PATH=$(docker volume inspect headscale_data --format '{{ .Mountpoint }}')
+
+          # Only restore if db.sqlite is missing (fresh server)
+          if sudo test -f "$VOLUME_PATH/db.sqlite"; then
+            echo "Headscale data exists, skipping restore"
+            exit 0
+          fi
+
+          echo "No existing data found, restoring from S3..."
+
+          if ! command -v rclone &>/dev/null; then
+            curl -fsSL https://rclone.org/install.sh | sudo bash
+          fi
+
+          export RCLONE_CONFIG_S3_TYPE=s3
+          export RCLONE_CONFIG_S3_PROVIDER=Other
+          export RCLONE_CONFIG_S3_ACCESS_KEY_ID="$S3_ACCESS_KEY"
+          export RCLONE_CONFIG_S3_SECRET_ACCESS_KEY="$S3_SECRET_KEY"
+          export RCLONE_CONFIG_S3_ENDPOINT="https://$S3_ENDPOINT"
+          export RCLONE_CONFIG_S3_REGION="hel1"
+
+          TMP_DIR=$(mktemp -d)
+          trap 'rm -rf "$TMP_DIR"' EXIT
+
+          if rclone copy "s3:$S3_BUCKET/headscale/latest.tar.gz" "$TMP_DIR/"; then
+            tar -xzf "$TMP_DIR/latest.tar.gz" -C "$TMP_DIR"
+            sudo cp "$TMP_DIR/headscale/"* "$VOLUME_PATH/"
+            echo "Restore complete"
+          else
+            echo "No backup found in S3, starting fresh"
+          fi
+
       - name: Deploy
         working-directory: /opt/lab-private
         run: |

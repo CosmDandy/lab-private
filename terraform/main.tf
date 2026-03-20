@@ -101,6 +101,10 @@ module "mesh_server" {
     runner_name       = "mesh-${each.key}"
     runner_labels     = "hcloud-mesh-${each.key}"
     github_repository = "${var.github_owner}/${var.github_repository}"
+    s3_access_key     = var.hetzner_s3_access_key
+    s3_secret_key     = var.hetzner_s3_secret_key
+    s3_bucket         = minio_s3_bucket.backup.bucket
+    s3_endpoint       = "hel1.your-objectstorage.com"
   })
 
   cloudflare_zone_id = var.cloudflare_zone_id

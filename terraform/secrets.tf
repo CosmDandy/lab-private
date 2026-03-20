@@ -173,6 +173,8 @@ locals {
     for name, _ in var.mesh_servers : name => {
       COOKIE_SECRET = random_password.mesh_cookie_secret[name].result
       CADDY_HASH    = var.caddy_hash
+      S3_ACCESS_KEY = var.hetzner_s3_access_key
+      S3_SECRET_KEY = var.hetzner_s3_secret_key
     }
   }
 
@@ -234,6 +236,26 @@ resource "github_actions_environment_variable" "mesh_caddy_user" {
   environment   = "mesh-${each.key}"
   variable_name = "CADDY_USER"
   value         = "mesh-${each.key}"
+
+  depends_on = [github_repository_environment.mesh]
+}
+
+resource "github_actions_environment_variable" "mesh_s3_bucket" {
+  for_each      = var.mesh_servers
+  repository    = var.github_repository
+  environment   = "mesh-${each.key}"
+  variable_name = "S3_BUCKET"
+  value         = minio_s3_bucket.backup.bucket
+
+  depends_on = [github_repository_environment.mesh]
+}
+
+resource "github_actions_environment_variable" "mesh_s3_endpoint" {
+  for_each      = var.mesh_servers
+  repository    = var.github_repository
+  environment   = "mesh-${each.key}"
+  variable_name = "S3_ENDPOINT"
+  value         = "hel1.your-objectstorage.com"
 
   depends_on = [github_repository_environment.mesh]
 }
