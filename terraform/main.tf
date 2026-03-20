@@ -1,53 +1,108 @@
+resource "hcloud_ssh_key" "default" {
+  count      = length(var.ssh_public_keys)
+  name       = "terraform-${count.index}"
+  public_key = var.ssh_public_keys[count.index]
+}
+
+data "github_actions_registration_token" "this" {
+  repository = var.github_repository
+}
+
 locals {
-  firewall_rules = [
-    { protocol = "tcp", port = "22",    description = "SSH" },
-    { protocol = "tcp", port = "80",    description = "Caddy config server" },
-    { protocol = "tcp", port = "443",   description = "VLESS Reality gRPC" },
-    { protocol = "tcp", port = "2053",  description = "VLESS Reality gRPC" },
-    { protocol = "tcp", port = "2083",  description = "VLESS Reality gRPC" },
-    { protocol = "tcp", port = "64444", description = "VLESS Reality gRPC" },
-    { protocol = "tcp", port = "2087",  description = "VLESS Reality HTTPUpgrade" },
-    { protocol = "tcp", port = "8446",  description = "VLESS Reality Vision" },
-    { protocol = "udp", port = "8443",  description = "Hysteria2 + Salamander" },
-    { protocol = "udp", port = "8444",  description = "TUIC v5" },
-    { protocol = "tcp", port = "8388",  description = "ShadowTLS + Shadowsocks" },
-    { protocol = "tcp", port = "8445",  description = "Trojan" },
-    { protocol = "tcp", port = "8389",  description = "Shadowsocks plain" },
-  ]
+  all_runners = merge(
+    { for k, _ in var.vpn_servers : "vpn-${k}" => "vpn-${k}" },
+    { for k, _ in var.mesh_servers : "mesh-${k}" => "mesh-${k}" },
+  )
 }
 
-resource "hcloud_ssh_key" "main" {
-  name       = var.server_name
-  public_key = var.ssh_public_key
-}
+resource "null_resource" "runner_cleanup" {
+  for_each = local.all_runners
 
-resource "hcloud_firewall" "vpn" {
-  name = "${var.server_name}-fw"
+  triggers = {
+    runner_name = each.value
+    repo        = "${var.github_owner}/${var.github_repository}"
+    token       = var.github_token
+  }
 
-  dynamic "rule" {
-    for_each = local.firewall_rules
-    content {
-      direction   = "in"
-      protocol    = rule.value.protocol
-      port        = rule.value.port
-      source_ips  = ["0.0.0.0/0", "::/0"]
-      description = rule.value.description
-    }
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<-EOT
+      RUNNER_ID=$(curl -sf \
+        -H "Authorization: token ${self.triggers.token}" \
+        "https://api.github.com/repos/${self.triggers.repo}/actions/runners" \
+        | jq -r '.runners[] | select(.name == "${self.triggers.runner_name}") | .id')
+      if [ -n "$RUNNER_ID" ] && [ "$RUNNER_ID" != "null" ]; then
+        curl -sf -X DELETE \
+          -H "Authorization: token ${self.triggers.token}" \
+          "https://api.github.com/repos/${self.triggers.repo}/actions/runners/$RUNNER_ID"
+        echo "Removed runner ${self.triggers.runner_name} (ID: $RUNNER_ID)"
+      fi
+    EOT
   }
 }
 
-resource "hcloud_server" "vpn" {
-  name        = var.server_name
-  server_type = var.server_type
-  location    = var.location
-  image       = var.image
+# ──────────────────────────────────────────────
+# VPN servers
+# ──────────────────────────────────────────────
 
-  ssh_keys = [hcloud_ssh_key.main.id]
+module "vpn_server" {
+  source   = "./modules/hcloud-server"
+  for_each = var.vpn_servers
 
-  firewall_ids = [hcloud_firewall.vpn.id]
+  name        = "vpn-${each.key}"
+  dns_name    = "${each.key}.vpn"
+  location    = each.value.location
+  server_type = each.value.type
+  image       = each.value.image
+  ssh_key_ids = hcloud_ssh_key.default[*].id
+  tcp_ports   = each.value.tcp_ports
+  udp_ports   = each.value.udp_ports
 
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes  = [ssh_keys]
-  }
+  labels = merge(each.value.labels, {
+    role = "vpn"
+  })
+
+  cloud_init = templatefile("${path.module}/cloud-init/vpn.yaml.tftpl", {
+    ssh_public_keys   = var.ssh_public_keys
+    runner_token      = data.github_actions_registration_token.this.token
+    runner_name       = "vpn-${each.key}"
+    runner_labels     = "hcloud-vpn-${each.key}"
+    github_repository = "${var.github_owner}/${var.github_repository}"
+  })
+
+  cloudflare_zone_id = var.cloudflare_zone_id
+  domain             = var.domain
+}
+
+# ──────────────────────────────────────────────
+# Mesh servers
+# ──────────────────────────────────────────────
+
+module "mesh_server" {
+  source   = "./modules/hcloud-server"
+  for_each = var.mesh_servers
+
+  name        = "mesh-${each.key}"
+  dns_name    = "${each.key}.mesh"
+  location    = each.value.location
+  server_type = each.value.type
+  image       = each.value.image
+  ssh_key_ids = hcloud_ssh_key.default[*].id
+  tcp_ports   = each.value.tcp_ports
+  udp_ports   = each.value.udp_ports
+
+  labels = merge(each.value.labels, {
+    role = "mesh"
+  })
+
+  cloud_init = templatefile("${path.module}/cloud-init/mesh.yaml.tftpl", {
+    ssh_public_keys   = var.ssh_public_keys
+    runner_token      = data.github_actions_registration_token.this.token
+    runner_name       = "mesh-${each.key}"
+    runner_labels     = "hcloud-mesh-${each.key}"
+    github_repository = "${var.github_owner}/${var.github_repository}"
+  })
+
+  cloudflare_zone_id = var.cloudflare_zone_id
+  domain             = var.domain
 }

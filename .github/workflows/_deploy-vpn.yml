@@ -2,48 +2,49 @@ name: "Deploy VPN (reusable)"
 on:
   workflow_call:
     inputs:
-      runner:
-        type: string
-        required: true
-      environment:
-        type: string
-        required: true
       server:
+        required: true
         type: string
-        default: vds-vpn-nl-01
-      ref:
-        type: string
-        default: ''
+
 jobs:
-  validate:
-    runs-on: ${{ inputs.runner }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ inputs.ref || github.sha }}
-      - name: Validate compose
-        run: docker compose -f infra/${{ inputs.server }}/docker-compose.yaml config --quiet
   deploy:
-    needs: validate
-    runs-on: ${{ inputs.runner }}
-    environment: ${{ inputs.environment }}
+    runs-on: hcloud-vpn-${{ inputs.server }}
+    environment: vpn-${{ inputs.server }}
     env:
-      DEPLOY_DIR: /opt/lab-private
-      COMPOSE_FILE: infra/${{ inputs.server }}/docker-compose.yaml
+      CONFIG_DIR: configs/vpn/${{ inputs.server }}
+      COMPOSE_PROJECT_DIR: /opt/lab-private
     steps:
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ inputs.ref || github.sha }}
-      - name: Generate configs
+
+      - name: Install jsonnet
+        run: |
+          if ! command -v jsonnet &> /dev/null; then
+            case "$(uname -m)" in
+              x86_64)  ARCH=x86_64 ;;
+              aarch64) ARCH=arm64 ;;
+            esac
+            curl -sLo /tmp/go-jsonnet.tar.gz \
+              "https://github.com/google/go-jsonnet/releases/download/v0.21.0/go-jsonnet_Linux_${ARCH}.tar.gz"
+            sudo tar -xzf /tmp/go-jsonnet.tar.gz -C /usr/local/bin/ jsonnet
+            rm /tmp/go-jsonnet.tar.gz
+          fi
+
+      - name: Generate client configs
+        run: make -C templates/sing-box
+
+      - name: Validate compose
+        run: docker compose -f $CONFIG_DIR/docker-compose.yaml config --quiet
+
+      - name: Render configs
         env:
-          DOMAIN: ${{ vars.DOMAIN }}
+          SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
+          SERVER_IPV4: ${{ vars.SERVER_IPV4 }}
           ACME_EMAIL: ${{ vars.ACME_EMAIL }}
-          VPN_SERVER_IP: ${{ vars.VPN_SERVER_IP }}
-          REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
-          CADDY_USER: ${{ secrets.CADDY_USER }}
+          CADDY_USER: ${{ vars.CADDY_USER }}
           CADDY_HASH: ${{ secrets.CADDY_HASH }}
           VLESS_UUID: ${{ secrets.VLESS_UUID }}
           REALITY_PRIVATE_KEY: ${{ secrets.REALITY_PRIVATE_KEY }}
+          REALITY_PUBLIC_KEY: ${{ vars.REALITY_PUBLIC_KEY }}
           REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
           HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
           SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
@@ -53,36 +54,43 @@ jobs:
           TROJAN_PASSWORD: ${{ secrets.TROJAN_PASSWORD }}
           SS_PLAIN_PASSWORD: ${{ secrets.SS_PLAIN_PASSWORD }}
         run: |
-          make -C clients/sing-box SERVER=${{ inputs.server }}
-          vars='$DOMAIN $ACME_EMAIL $VPN_SERVER_IP $REALITY_PUBLIC_KEY $REALITY_PRIVATE_KEY $CADDY_USER $CADDY_HASH $VLESS_UUID $REALITY_SHORT_ID $HY2_PASSWORD $SALAMANDER_PASSWORD $TUIC_PASSWORD $SHADOWTLS_PASSWORD $SS_PASSWORD $SS_PLAIN_PASSWORD $TROJAN_PASSWORD'
-          for tpl in infra/${{ inputs.server }}/configs/sing-box/*.tpl \
-                     infra/${{ inputs.server }}/configs/caddy/*.tpl \
-                     infra/${{ inputs.server }}/client/*.json.tpl; do
-            envsubst "$vars" < "$tpl" > "${tpl%.tpl}"
+          caddy_vars='$SERVER_ADDRESS $ACME_EMAIL $CADDY_USER $CADDY_HASH'
+          for tpl in $CONFIG_DIR/caddy/*.tpl; do
+            envsubst "$caddy_vars" < "$tpl" > "${tpl%.tpl}"
           done
+          for tpl in $CONFIG_DIR/sing-box/*.json.tpl; do
+            envsubst < "$tpl" > "${tpl%.tpl}"
+          done
+
       - name: Upload client configs
         uses: actions/upload-artifact@v7
         with:
-          name: sing-box-client-configs-${{ inputs.environment }}
-          path: infra/${{ inputs.server }}/client/client-*.json
+          name: sing-box-client-${{ inputs.server }}
+          path: ${{ env.CONFIG_DIR }}/sing-box/client-*.json
           retention-days: 7
-      - name: Sync
+
+      - name: Prepare client configs
+        run: |
+          mkdir -p "$CONFIG_DIR/client"
+          cp $CONFIG_DIR/sing-box/client-*.json "$CONFIG_DIR/client/" 2>/dev/null || true
+
+      - name: Sync configs to deploy directory
         run: |
           rsync -a --delete \
-            --exclude='.git' \
             --exclude='*.tpl' \
             --exclude='*.jsonnet' \
-            --exclude='infra/${{ inputs.server }}/configs/sing-box/tls/' \
-            "$GITHUB_WORKSPACE/" "$DEPLOY_DIR/"
+            --exclude='tls/' \
+            "$CONFIG_DIR/" "$COMPOSE_PROJECT_DIR/"
+
       - name: Generate TLS cert
         run: |
-          cert_dir="$DEPLOY_DIR/infra/${{ inputs.server }}/configs/sing-box/tls"
+          cert_dir="$COMPOSE_PROJECT_DIR/sing-box/tls"
           if [ ! -f "$cert_dir/hysteria2.crt" ]; then
             mkdir -p "$cert_dir"
             openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 \
               -days 3650 -nodes \
               -keyout "$cert_dir/hysteria2.key" \
-              -out  "$cert_dir/hysteria2.crt" \
+              -out "$cert_dir/hysteria2.crt" \
               -subj "/CN=hysteria2" -quiet
             echo "Generated new TLS cert"
           fi
@@ -90,18 +98,17 @@ jobs:
       - name: Deploy
         working-directory: /opt/lab-private
         run: |
-          docker compose -f "$COMPOSE_FILE" pull
-          docker compose -f "$COMPOSE_FILE" up -d --remove-orphans --force-recreate
+          docker compose pull
+          docker compose up -d --remove-orphans --force-recreate
+
       - name: Verify
         working-directory: /opt/lab-private
         run: |
           timeout 30 bash -c '
-            until docker compose -f "$COMPOSE_FILE" ps --format json 2>/dev/null \
+            until docker compose ps --format json 2>/dev/null \
               | jq -se "[.[] | select(.State != \"running\")] | length == 0" > /dev/null 2>&1
             do sleep 1; done
           ' || {
-            docker compose -f "$COMPOSE_FILE" logs --tail 20
+            docker compose logs --tail 20
             exit 1
           }
-      - name: Firewall
-        run: bash infra/${{ inputs.server }}/firewall.sh

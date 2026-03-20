@@ -1,0 +1,13 @@
+name: "Deploy: vpn-hel-01"
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - configs/vpn/hel-01/**
+jobs:
+  deploy:
+    uses: ./.github/workflows/_deploy-vpn.yml
+    with:
+      server: hel-01
+    secrets: inherit

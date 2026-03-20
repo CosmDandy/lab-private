@@ -1,9 +1,20 @@
 .DS_Store
-infra/vpn-nl/configs/sing-box/tls/
 .env
-clients/sing-box/*.json.tpl
+secrets/
 
-# Ansible role binary archives
+# Ansible
 ansible/roles/*/files/*.tgz
 ansible/roles/*/files/*.zip
-secrets/
+
+# Sing-box TLS certs
+configs/vpn/*/sing-box/tls/
+
+# Generated sing-box client configs (from .jsonnet)
+configs/vpn/*/sing-box/client-*.json.tpl
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/tfplan
+terraform/secrets.auto.tfvars
