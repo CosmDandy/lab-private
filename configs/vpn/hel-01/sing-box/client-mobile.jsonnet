@@ -2,7 +2,7 @@ local outbounds = import 'lib/outbounds.libsonnet';
 local route = import 'lib/route.libsonnet';
 
 {
-  log: { level: 'info', timestamp: true },
+  log: { level: 'warn', timestamp: true },
   dns: {
     servers: [
       { address: 'https://1.1.1.1/dns-query', tag: 'remote', address_resolver: 'local' },

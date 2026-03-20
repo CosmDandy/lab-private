@@ -2,7 +2,7 @@
   vlessRealityVision():: {
     type: 'vless',
     tag: 'vless-reality-vision',
-    server: '${SERVER_ADDRESS}',
+    server: '${SERVER_IPV4}',
     server_port: 8446,
     uuid: '${VLESS_UUID}',
     flow: 'xtls-rprx-vision',
@@ -21,7 +21,7 @@
   vlessRealityGrpc():: {
     type: 'vless',
     tag: 'vless-reality-grpc',
-    server: '${SERVER_ADDRESS}',
+    server: '${SERVER_IPV4}',
     server_port: 2053,
     uuid: '${VLESS_UUID}',
     flow: '',
@@ -41,7 +41,7 @@
   hysteria2Salamander():: {
     type: 'hysteria2',
     tag: 'hysteria2-salamander',
-    server: '${SERVER_ADDRESS}',
+    server: '${SERVER_IPV4}',
     server_port: 443,
     password: '${HY2_PASSWORD}',
     tls: { enabled: true, server_name: 'bing.com', insecure: true },
