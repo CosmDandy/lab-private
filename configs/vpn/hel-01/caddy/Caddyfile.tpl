@@ -3,7 +3,7 @@
 }
 
 ${SERVER_ADDRESS} {
-	basicauth {
+	basic_auth {
 		${CADDY_USER} ${CADDY_HASH}
 	}
 	root * /srv/configs

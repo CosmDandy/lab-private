@@ -9,14 +9,14 @@ ${SERVER_ADDRESS} {
 	}
 
 	handle /admin/* {
-		basicauth {
+		basic_auth {
 			${CADDY_USER} ${CADDY_HASH}
 		}
 		reverse_proxy headplane:3000
 	}
 
 	handle /health/* {
-		basicauth {
+		basic_auth {
 			${CADDY_USER} ${CADDY_HASH}
 		}
 		reverse_proxy headscale:9090
