@@ -32,13 +32,9 @@ local route = import 'lib/route.libsonnet';
     },
   ],
   outbounds:
-    [outbounds.selector(outbounds.linuxTags)]
-    + [outbounds.urltest(outbounds.linuxTags)]
-    + [outbounds.urltest(outbounds.linuxVlessTagsList, tag='vless-auto')]
-    + [outbounds.urltest(outbounds.udpTags, tag='udp-auto')]
-    + [outbounds.urltest(outbounds.tcpTags, tag='tcp-auto')]
-    + outbounds.linuxGrpcVariants
-    + outbounds.commonProtocols
+    [outbounds.selector(outbounds.allTags)]
+    + [outbounds.urltest(outbounds.allTags)]
+    + outbounds.allProtocols
     + [outbounds.direct()],
   route: route.base({ default_domain_resolver: 'local' }),
   experimental: {

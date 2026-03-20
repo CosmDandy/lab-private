@@ -26,33 +26,6 @@ resource "random_password" "salamander" {
   special  = false
 }
 
-resource "random_password" "tuic" {
-  for_each = var.vpn_servers
-  length   = 32
-  special  = false
-}
-
-resource "random_password" "shadowtls" {
-  for_each = var.vpn_servers
-  length   = 32
-  special  = false
-}
-
-resource "random_bytes" "ss" {
-  for_each = var.vpn_servers
-  length   = 16
-}
-
-resource "random_password" "trojan" {
-  for_each = var.vpn_servers
-  length   = 32
-  special  = false
-}
-
-resource "random_bytes" "ss_plain" {
-  for_each = var.vpn_servers
-  length   = 16
-}
 
 locals {
   vpn_env_secrets = {
@@ -62,11 +35,6 @@ locals {
       REALITY_SHORT_ID    = var.reality_short_id
       HY2_PASSWORD        = random_password.hy2[name].result
       SALAMANDER_PASSWORD = random_password.salamander[name].result
-      TUIC_PASSWORD       = random_password.tuic[name].result
-      SHADOWTLS_PASSWORD  = random_password.shadowtls[name].result
-      SS_PASSWORD         = random_bytes.ss[name].base64
-      TROJAN_PASSWORD     = random_password.trojan[name].result
-      SS_PLAIN_PASSWORD   = random_bytes.ss_plain[name].base64
     }
   }
 

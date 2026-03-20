@@ -28,11 +28,7 @@ local route = import 'lib/route.libsonnet';
   outbounds:
     [outbounds.selector(outbounds.allTags)]
     + [outbounds.urltest(outbounds.allTags)]
-    + [outbounds.urltest(outbounds.vlessTagsList, tag='vless-auto')]
-    + [outbounds.urltest(outbounds.udpTags, tag='udp-auto')]
-    + [outbounds.urltest(outbounds.tcpTags, tag='tcp-auto')]
-    + outbounds.allGrpcVariants
-    + outbounds.commonProtocols
+    + outbounds.allProtocols
     + [outbounds.direct()],
   route: route.base({ default_domain_resolver: 'local' }),
   experimental: {
