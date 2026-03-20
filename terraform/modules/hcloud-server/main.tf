@@ -25,6 +25,10 @@ resource "hcloud_server" "this" {
     managed-by = "terraform"
   })
 
+  lifecycle {
+    ignore_changes = [user_data]
+  }
+
   public_net {
     ipv4_enabled = true
     ipv6_enabled = true
