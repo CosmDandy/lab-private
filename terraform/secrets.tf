@@ -245,7 +245,7 @@ resource "github_actions_environment_variable" "mesh_s3_bucket" {
   repository    = var.github_repository
   environment   = "mesh-${each.key}"
   variable_name = "S3_BUCKET"
-  value         = minio_s3_bucket.backup.bucket
+  value         = "lab-private-backup"
 
   depends_on = [github_repository_environment.mesh]
 }

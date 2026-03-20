@@ -103,7 +103,7 @@ module "mesh_server" {
     github_repository = "${var.github_owner}/${var.github_repository}"
     s3_access_key     = var.hetzner_s3_access_key
     s3_secret_key     = var.hetzner_s3_secret_key
-    s3_bucket         = minio_s3_bucket.backup.bucket
+    s3_bucket         = "lab-private-backup"
     s3_endpoint       = "hel1.your-objectstorage.com"
   })
 
