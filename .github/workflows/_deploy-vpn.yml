@@ -12,7 +12,7 @@ jobs:
     environment: vpn-${{ inputs.server }}
     env:
       CONFIG_DIR: configs/vpn/${{ inputs.server }}
-      COMPOSE_PROJECT_DIR: /opt/lab-private
+      COMPOSE_PROJECT_DIR: /opt/vpn-infra
     steps:
       - uses: actions/checkout@v6
 
@@ -89,13 +89,13 @@ jobs:
           fi
 
       - name: Deploy
-        working-directory: /opt/lab-private
+        working-directory: /opt/vpn-infra
         run: |
           docker compose pull
           docker compose up -d --remove-orphans --force-recreate
 
       - name: Verify
-        working-directory: /opt/lab-private
+        working-directory: /opt/vpn-infra
         run: |
           timeout 30 bash -c '
             until docker compose ps --format json 2>/dev/null \

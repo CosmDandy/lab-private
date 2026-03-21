@@ -1,7 +1,7 @@
-# lab-private
+# vpn-infra
 
-[![Terraform](https://github.com/CosmDandy/lab-private/actions/workflows/terraform.yml/badge.svg)](https://github.com/CosmDandy/lab-private/actions/workflows/terraform.yml)
-[![Deploy: vpn-hel-01](https://github.com/CosmDandy/lab-private/actions/workflows/deploy-vpn-hel-01.yml/badge.svg)](https://github.com/CosmDandy/lab-private/actions/workflows/deploy-vpn-hel-01.yml)
+[![Terraform](https://github.com/CosmDandy/vpn-infra/actions/workflows/terraform.yml/badge.svg)](https://github.com/CosmDandy/vpn-infra/actions/workflows/terraform.yml)
+[![Deploy: vpn-hel-01](https://github.com/CosmDandy/vpn-infra/actions/workflows/deploy-vpn-hel-01.yml/badge.svg)](https://github.com/CosmDandy/vpn-infra/actions/workflows/deploy-vpn-hel-01.yml)
 
 ![Terraform](https://img.shields.io/badge/Terraform-7B42BC?logo=terraform&logoColor=white)
 ![HCP Terraform](https://img.shields.io/badge/HCP_Terraform-7B42BC?logo=terraform&logoColor=white)

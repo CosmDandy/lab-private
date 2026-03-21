@@ -109,8 +109,8 @@ runcmd:
   - systemctl start docker
 
   # Prepare deploy directory
-  - mkdir -p /opt/lab-private
-  - chown -R github-runner:github-runner /opt/lab-private
+  - mkdir -p /opt/vpn-infra
+  - chown -R github-runner:github-runner /opt/vpn-infra
 
   # Install rclone
   - curl -fsSL https://rclone.org/install.sh | bash

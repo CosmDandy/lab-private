@@ -5,7 +5,7 @@
 If you discover a security vulnerability in this project, please report it responsibly:
 
 1. **Do not** open a public issue
-2. Email: [create a private security advisory](https://github.com/CosmDandy/lab-private/security/advisories/new)
+2. Email: [create a private security advisory](https://github.com/CosmDandy/vpn-infra/security/advisories/new)
 
 ## Scope
 

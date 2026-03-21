@@ -108,13 +108,13 @@ runcmd:
   - systemctl start docker
 
   # Prepare deploy directory
-  - mkdir -p /opt/lab-private
-  - chown -R github-runner:github-runner /opt/lab-private
+  - mkdir -p /opt/vpn-infra
+  - chown -R github-runner:github-runner /opt/vpn-infra
 
   # Generate TLS certificates for Hysteria2/TUIC
-  - mkdir -p /opt/lab-private/sing-box/tls
-  - openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -days 3650 -nodes -keyout /opt/lab-private/sing-box/tls/hysteria2.key -out /opt/lab-private/sing-box/tls/hysteria2.crt -subj "/CN=bing.com"
-  - chown -R github-runner:github-runner /opt/lab-private/sing-box/tls
+  - mkdir -p /opt/vpn-infra/sing-box/tls
+  - openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -days 3650 -nodes -keyout /opt/vpn-infra/sing-box/tls/hysteria2.key -out /opt/vpn-infra/sing-box/tls/hysteria2.crt -subj "/CN=bing.com"
+  - chown -R github-runner:github-runner /opt/vpn-infra/sing-box/tls
 
   # Install GitHub Actions runner
   - |

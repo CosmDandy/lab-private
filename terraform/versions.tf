@@ -4,7 +4,7 @@ terraform {
   cloud {
     organization = "CosmDandy"
     workspaces {
-      name = "lab-private"
+      name = "vpn-infra"
     }
   }
 
