@@ -1,168 +1,143 @@
 # lab-private
 
-Personal infrastructure as code: VPN server (sing-box, 10 protocols) and mesh network (headscale + headplane + caddy). Deployed with Docker Compose via GitHub Actions on self-hosted runners. Infrastructure managed with Terraform (Hetzner Cloud + Cloudflare DNS).
+[![Terraform](https://github.com/CosmDandy/lab-private/actions/workflows/terraform.yml/badge.svg)](https://github.com/CosmDandy/lab-private/actions/workflows/terraform.yml)
+[![Deploy: vpn-hel-01](https://github.com/CosmDandy/lab-private/actions/workflows/deploy-vpn-hel-01.yml/badge.svg)](https://github.com/CosmDandy/lab-private/actions/workflows/deploy-vpn-hel-01.yml)
+
+![Terraform](https://img.shields.io/badge/Terraform-7B42BC?logo=terraform&logoColor=white)
+![HCP Terraform](https://img.shields.io/badge/HCP_Terraform-7B42BC?logo=terraform&logoColor=white)
+![Hetzner Cloud](https://img.shields.io/badge/Hetzner_Cloud-D50C2D?logo=hetzner&logoColor=white)
+![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?logo=cloudflare&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?logo=githubactions&logoColor=white)
+![cloud-init](https://img.shields.io/badge/cloud--init-E95420?logo=ubuntu&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+
+Personal VPN infrastructure managed entirely as code. Full lifecycle automation — from server provisioning to config deployment — using Terraform, GitHub Actions, and Docker Compose on Hetzner Cloud.
+
+## Tech Stack
+
+| Layer | Tools |
+|-------|-------|
+| Infrastructure | [Terraform Cloud](https://app.terraform.io), [Hetzner Cloud](https://www.hetzner.com/cloud) (ARM), [Cloudflare DNS](https://www.cloudflare.com) |
+| Provisioning | cloud-init (Docker, self-hosted runner, kernel tuning) |
+| Deployment | GitHub Actions self-hosted runners, Docker Compose v2 |
+| VPN | [sing-box](https://sing-box.sagernet.org) (VLESS Reality, Hysteria2) |
+| Configuration | [Jsonnet](https://jsonnet.org) templates, envsubst |
+| Backup | rclone to Hetzner S3 Object Storage |
 
 ## Architecture
 
 ```mermaid
 graph TB
-    subgraph "VPN Server — HEL"
-        SB[sing-box<br/>10 protocols]
+    subgraph "Terraform Cloud"
+        TFC[HCP Workspace]
     end
 
-    subgraph "Mesh Server — HEL"
-        C[Caddy<br/>reverse proxy + TLS]
-        HS[Headscale<br/>coordination + DERP]
-        HP[Headplane<br/>web UI]
-        C --> HS
-        C --> HP
-        HP --> HS
+    subgraph "Cloudflare"
+        DNS[DNS Records]
     end
 
-    HEL_VPN -.->|Tailscale / WireGuard| HEL_MESH
+    subgraph "GitHub Actions"
+        TFW[Terraform Workflow<br/>github-hosted]
+        DPL[Deploy Workflow<br/>self-hosted runner]
+    end
 
-    Client1[macOS] -->|VLESS/Hysteria2/TUIC| SB
-    Client2[iOS] -->|VLESS/Hysteria2/TUIC| SB
-    Client3[Linux] -->|VLESS/Hysteria2/TUIC| SB
+    subgraph "Hetzner Cloud  HEL"
+        subgraph "VPN Server  cax11 ARM"
+            SB[sing-box]
+        end
+    end
 
-    Client1 -.->|Tailscale| HS
-    Client2 -.->|Tailscale| HS
-    Client3 -.->|Tailscale| HS
+    TFW -->|plan / apply| TFC
+    TFC -->|provision| SB
+    TFC -->|manage| DNS
+    DPL -->|rsync + compose up| SB
+
+    Client[Clients  macOS / iOS / Linux] -->|VLESS Reality / Hysteria2| SB
 ```
 
-### Protocols (VPN Server)
+## How It Works
 
-| Protocol | Port | Transport |
-|----------|------|-----------|
-| VLESS Reality gRPC | 443/tcp | gRPC, SNI: www.microsoft.com |
-| VLESS Reality gRPC | 2053/tcp | gRPC, SNI: dl.google.com |
-| VLESS Reality gRPC | 2083/tcp | gRPC, SNI: www.samsung.com |
-| VLESS Reality gRPC | 64444/tcp | gRPC, SNI: learn.microsoft.com |
-| VLESS Reality HTTPUpgrade | 2087/tcp | HTTPUpgrade, SNI: www.logitech.com |
-| Hysteria2 + Salamander | 8443/udp | QUIC + obfuscation |
-| TUIC v5 | 8444/udp | QUIC |
-| ShadowTLS v3 + SS2022 | 8388/tcp | ShadowTLS + Shadowsocks |
-| Trojan | 8445/tcp | TLS |
-| Shadowsocks 2022 | 8389/tcp | Direct |
+### Infrastructure Provisioning
 
-### Mesh Server
-
-| Service | Port | Purpose |
-|---------|------|---------|
-| Caddy | 80, 443/tcp | HTTPS reverse proxy, ACME, client config distribution |
-| Headscale | 3478/udp | STUN, embedded DERP relay |
-| Headplane | internal | Web UI for headscale management |
-
-### Backups
-
-Headscale SQLite database backed up weekly (Sunday 03:00) via systemd timer:
-- Local: `/opt/backups/headscale/` on mesh server
-- Remote: copied to VPN server via Tailscale (SCP)
-- Retention: 8 weeks
-
-## Repository Structure
-
-```
-configs/
-  vpn/<server>/               # Per-server VPN configs
-    docker-compose.yaml
-    caddy/Caddyfile.tpl
-    sing-box/
-      config.json.tpl          # Server config template
-      client-base.jsonnet       # macOS client (imports shared libs)
-      client-mobile.jsonnet     # iOS client
-      client-linux.jsonnet      # Linux client
-  mesh/<server>/              # Per-server mesh configs
-    docker-compose.yaml
-    caddy/Caddyfile.tpl
-    headscale/config.yaml.tpl
-    headplane/config.yaml.tpl
-templates/
-  sing-box/
-    lib/
-      outbounds.libsonnet      # Shared outbound definitions
-      route.libsonnet          # Shared route rules and rule sets
-terraform/
-  versions.tf                 # Providers + Terraform Cloud backend
-  variables.tf                # Input variables
-  main.tf                     # SSH keys, runner cleanup, server modules
-  secrets.tf                  # GitHub environments + per-server secrets
-  outputs.tf                  # Server IPs and FQDNs
-  cloud-init/                 # Server bootstrap templates
-  modules/hcloud-server/      # Reusable server module (server + firewall + DNS)
-.github/workflows/
-  deploy-vpn.yml              # VPN deploy trigger
-  deploy-mesh.yml             # Mesh deploy trigger
-  _deploy-vpn.yml             # Reusable VPN deploy workflow
-  _deploy-mesh.yml            # Reusable mesh deploy workflow
-  terraform.yml               # Terraform CI/CD
-```
-
-## Quick Start
-
-### 1. Infrastructure (Terraform)
-
-Servers are managed via Terraform with HCP Terraform Cloud backend:
-
-```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
-
-Adding a new server = one entry in `terraform.tfvars`:
+One entry in `terraform.tfvars` = fully provisioned server with firewall, DNS, GitHub environment, secrets, and self-hosted runner:
 
 ```hcl
 vpn_servers = {
   hel-01 = {
     location  = "hel1"
     type      = "cax11"
-    tcp_ports = [443, 2053, 2083, 64444, 2087, 8388, 8389, 8445]
-    udp_ports = [3478, 8443, 8444]
+    tcp_ports = [8446, 2053]
+    udp_ports = [443]
   }
 }
 ```
 
-### 2. Client configs (Jsonnet)
+What Terraform creates per server:
+- Hetzner Cloud server with cloud-init bootstrap
+- Firewall with exact port rules (TCP/UDP)
+- Cloudflare DNS A-record (`<name>.vpn.cosmdandy.dev`)
+- GitHub Actions environment with auto-generated secrets (UUID, passwords, keys)
+- Self-hosted runner registration (with cleanup on `terraform destroy`)
 
-Per-server `.jsonnet` files in `configs/vpn/<server>/sing-box/` import shared libraries from `templates/sing-box/lib/`:
+### Server Bootstrap
 
-```bash
-jsonnet --jpath templates/sing-box -o output.json configs/vpn/hel-01/sing-box/client-base.jsonnet
+cloud-init provisions each server on first boot:
+- Docker CE + Compose v2
+- GitHub Actions self-hosted runner (labeled per server)
+- Kernel tuning: BBR, fq qdisc, enlarged UDP/TCP buffers, high conntrack limits
+- Hardened SSH + unattended-upgrades + automatic reboot on panic
+
+### Deployment Pipeline
+
+Push to `master` triggers deploy on self-hosted runner:
+
+1. Compile `.jsonnet` client configs using shared libraries
+2. Validate `docker-compose.yaml` syntax
+3. Render `.tpl` templates via `envsubst` with environment secrets
+4. `rsync` configs to server, `docker compose up -d`
+5. Verify all containers are running
+
+Generated client configs are uploaded as GitHub artifacts (7-day retention).
+
+### Terraform Pipeline
+
+| Event | Action |
+|-------|--------|
+| Pull request | `fmt -check` + `validate` + `plan` (posted as PR comment) |
+| Push to master | Auto-apply |
+
+### Client Configuration
+
+Jsonnet with shared libraries generates per-platform sing-box configs:
+
+- **macOS** — TUN mode, split routing
+- **iOS** — strict routing, tuned DNS timeouts
+- **Linux** — mixed inbound (HTTP/SOCKS5), Docker-aware routing
+
+## Repository Structure
+
 ```
-
-In CI, this runs automatically during deploy.
-
-### 3. Deploy
-
-Push to `master` triggers auto-deploy via GitHub Actions:
-
-- Changes in `configs/vpn/<server>/` or `templates/sing-box/` -> deploy VPN
-- Changes in `configs/mesh/<server>/` -> deploy mesh
-- Changes in `terraform/` -> Terraform plan/apply
-
-Manual deploy: trigger workflows via GitHub Actions UI (`workflow_dispatch`).
-
-## CI/CD Pipeline
-
-### VPN Deploy
-
-1. **Install jsonnet** - downloads go-jsonnet if not present
-2. **Generate** - Jsonnet -> `.json.tpl` client templates
-3. **Validate** - `docker compose config` syntax check
-4. **Render** - `envsubst` replaces `${VAR}` in all `.tpl` files
-5. **Upload artifacts** - client configs as GitHub artifacts (7 days)
-6. **Sync** - `rsync` to `/opt/lab-private/` on the server
-7. **Deploy** - `docker compose up -d`
-8. **Verify** - all containers are running
-
-### Terraform
-
-1. **Format check** - `terraform fmt -check`
-2. **Validate** - `terraform validate`
-3. **Plan** - on PRs, posts plan as comment
-4. **Apply** - on push to master (auto-approve)
+terraform/
+  versions.tf                # Providers + Terraform Cloud backend
+  variables.tf               # Input variables
+  main.tf                    # Server modules, runner lifecycle
+  secrets.tf                 # GitHub environments + auto-generated secrets
+  outputs.tf                 # Server IPs and FQDNs
+  modules/hcloud-server/     # Reusable module: server + firewall + DNS
+  cloud-init/                # Server bootstrap templates
+configs/vpn/<server>/
+  docker-compose.yaml        # sing-box container definition
+  sing-box/config.json.tpl   # Server config template
+  sing-box/client-*.jsonnet  # Per-platform client configs
+templates/sing-box/lib/
+  outbounds.libsonnet        # Shared outbound definitions
+  route.libsonnet            # Shared route rules and rule sets
+.github/workflows/
+  terraform.yml              # Terraform CI/CD (github-hosted)
+  deploy-vpn-*.yml           # Per-server deploy triggers
+  _deploy-vpn.yml            # Reusable deploy workflow (self-hosted)
+```
 
 ## License
 
