@@ -100,19 +100,6 @@ resource "github_actions_environment_variable" "vpn_acme_email" {
   depends_on = [github_repository_environment.vpn]
 }
 
-resource "github_actions_environment_variable" "vpn_mesh_server_ipv4" {
-  for_each = {
-    for k, _ in var.vpn_servers : k => k
-    if contains(keys(var.mesh_servers), k)
-  }
-  repository    = var.github_repository
-  environment   = "vpn-${each.key}"
-  variable_name = "MESH_SERVER_IPV4"
-  value         = module.mesh_server[each.key].ipv4_address
-
-  depends_on = [github_repository_environment.vpn]
-}
-
 resource "github_actions_environment_variable" "vpn_caddy_user" {
   for_each      = var.vpn_servers
   repository    = var.github_repository

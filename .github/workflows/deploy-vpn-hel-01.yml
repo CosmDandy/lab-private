@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - configs/vpn/hel-01/**
+      - templates/sing-box/**
 jobs:
   deploy:
     uses: ./.github/workflows/_deploy-vpn.yml
