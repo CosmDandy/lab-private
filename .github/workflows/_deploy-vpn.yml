@@ -44,6 +44,7 @@ jobs:
         env:
           SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
           SERVER_IPV4: ${{ vars.SERVER_IPV4 }}
+          MESH_SERVER_IPV4: ${{ vars.MESH_SERVER_IPV4 || vars.SERVER_IPV4 }}
           ACME_EMAIL: ${{ vars.ACME_EMAIL }}
           CADDY_USER: ${{ vars.CADDY_USER }}
           CADDY_HASH: ${{ secrets.CADDY_HASH }}

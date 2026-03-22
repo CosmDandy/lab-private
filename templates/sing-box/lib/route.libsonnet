@@ -4,8 +4,9 @@ local directTags = ['geosite-ru', 'geoip-ru', 'geosite-yandex', 'geosite-mailru'
 local rules = [
   { action: 'sniff' },
   { protocol: 'dns', action: 'hijack-dns' },
-  { ip_cidr: ['${SERVER_IPV4}/32'], action: 'route', outbound: 'direct' },
+  { ip_cidr: ['${SERVER_IPV4}/32', '${MESH_SERVER_IPV4}/32'], action: 'route', outbound: 'direct' },
   { ip_is_private: true, action: 'route', outbound: 'direct' },
+  { process_name: ['ssh', 'scp', 'sftp'], action: 'route', outbound: 'direct' },
   { rule_set: blockTags, action: 'reject' },
   { rule_set: directTags, action: 'route', outbound: 'direct' },
 ];

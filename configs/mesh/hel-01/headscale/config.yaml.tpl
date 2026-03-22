@@ -66,10 +66,10 @@ derp:
     # Region ID to use for the embedded DERP server.
     # The local DERP prevails if the region ID collides with other region ID coming from
     # the regular DERP config.
-    region_id: 1777
+    region_id: 900
     # Region code and name are displayed in the Tailscale UI to identify a DERP region
-    region_code: "headscale"
-    region_name: "Headscale Embedded DERP"
+    region_code: "hel"
+    region_name: "Helsinki"
     # Listens over UDP at the configured address for STUN connections - to help with NAT traversal.
     # When the embedded DERP server is enabled stun_listen_addr MUST be defined.
     #
@@ -259,44 +259,7 @@ dns:
   # Extra DNS records
   # so far only A and AAAA records are supported (on the tailscale side)
   # See: docs/ref/dns.md
-  extra_records:
-    - name: pve-work.cosmdandy.ru
-      type: A
-      value: 100.64.0.3
-    - name: jellyfin.cosmdandy.ru
-      type: A
-      value: 100.64.0.14
-    - name: paperless.cosmdandy.ru
-      type: A
-      value: 100.64.0.14
-    - name: authentik.cosmdandy.ru
-      type: A
-      value: 100.64.0.14
-    - name: photoprism.cosmdandy.ru
-      type: A
-      value: 100.64.0.14
-    - name: nomad.cosmdandy.ru
-      type: A
-      value: 100.64.0.14
-    - name: vault.cosmdandy.ru
-      type: A
-      value: 100.64.0.14
-    - name: consul.cosmdandy.ru
-      type: A
-      value: 100.64.0.14
-    - name: internal.traefik.cosmdandy.ru
-      type: A
-      value: 100.64.0.14
-      #   - name: "grafana.myvpn.example.com"
-      #     type: "A"
-      #     value: "100.64.0.3"
-      #
-      #   # you can also put it in one line
-      #   - { name: "prometheus.myvpn.example.com", type: "A", value: "100.64.0.3" }
-      #
-      # Alternatively, extra DNS records can be loaded from a JSON file.
-      # Headscale processes this file on each change.
-      # extra_records_path: /var/lib/headscale/extra-records.json
+  extra_records: []
 # Unix socket used for the CLI to connect without authentication
 # Note: for production you will want to set this to something like:
 
