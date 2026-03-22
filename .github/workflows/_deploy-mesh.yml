@@ -48,12 +48,10 @@ jobs:
           S3_BUCKET: ${{ vars.S3_BUCKET }}
           S3_ENDPOINT: ${{ vars.S3_ENDPOINT }}
         run: |
-          # Create volume if it doesn't exist
           docker volume create headscale_data 2>/dev/null || true
-          VOLUME_PATH=$(docker volume inspect headscale_data --format '{{ .Mountpoint }}')
 
-          # Only restore if db.sqlite is missing (fresh server)
-          if sudo test -f "$VOLUME_PATH/db.sqlite"; then
+          # Check via Docker — no sudo needed, no host path permissions issues
+          if docker run --rm -v headscale_data:/data alpine test -f /data/db.sqlite; then
             echo "Headscale data exists, skipping restore"
             exit 0
           fi
@@ -74,13 +72,25 @@ jobs:
           TMP_DIR=$(mktemp -d)
           trap 'rm -rf "$TMP_DIR"' EXIT
 
-          if rclone copy "s3:$S3_BUCKET/headscale/latest.tar.gz" "$TMP_DIR/"; then
-            tar -xzf "$TMP_DIR/latest.tar.gz" -C "$TMP_DIR"
-            sudo cp "$TMP_DIR/headscale/"* "$VOLUME_PATH/"
-            echo "Restore complete"
-          else
+          rclone copy "s3:$S3_BUCKET/headscale/latest.tar.gz" "$TMP_DIR/"
+
+          if [ ! -f "$TMP_DIR/latest.tar.gz" ]; then
             echo "No backup found in S3, starting fresh"
+            exit 0
           fi
+
+          tar -xzf "$TMP_DIR/latest.tar.gz" -C "$TMP_DIR"
+
+          if [ ! -d "$TMP_DIR/headscale" ]; then
+            echo "Backup archive has unexpected structure, starting fresh"
+            exit 0
+          fi
+
+          docker run --rm \
+            -v headscale_data:/data \
+            -v "$TMP_DIR/headscale:/backup:ro" \
+            alpine sh -c 'cp /backup/* /data/'
+          echo "Restore complete"
 
       - name: Deploy
         working-directory: /opt/vpn-infra
