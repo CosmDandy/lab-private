@@ -1,0 +1,70 @@
+---
+- name: Create backup directory
+  ansible.builtin.file:
+    path: /opt/backups/headscale
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy backup script
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../scripts/backup-headscale.sh"
+    dest: /usr/local/bin/backup-headscale.sh
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create backup env file
+  ansible.builtin.copy:
+    dest: /etc/default/backup-headscale
+    content: |
+      BACKUP_REMOTE_HOST={{ backup_remote_host | default('') }}
+      BACKUP_REMOTE_USER={{ backup_remote_user | default('root') }}
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Create backup systemd service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/backup-headscale.service
+    content: |
+      [Unit]
+      Description=Headscale database backup
+      After=network.target
+
+      [Service]
+      Type=oneshot
+      EnvironmentFile=/etc/default/backup-headscale
+      ExecStart=/usr/local/bin/backup-headscale.sh
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload systemd
+
+- name: Create backup systemd timer
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/backup-headscale.timer
+    content: |
+      [Unit]
+      Description=Weekly headscale backup
+
+      [Timer]
+      OnCalendar=Sun 03:00
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload systemd
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable backup timer
+  ansible.builtin.systemd:
+    name: backup-headscale.timer
+    enabled: true
+    state: started
