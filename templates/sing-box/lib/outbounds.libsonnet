@@ -3,7 +3,7 @@
     type: 'vless',
     tag: 'vless-reality-vision',
     server: '${SERVER_IPV4}',
-    server_port: 8446,
+    server_port: 443,
     uuid: '${VLESS_UUID}',
     flow: 'xtls-rprx-vision',
     tls: {
@@ -22,7 +22,7 @@
     type: 'vless',
     tag: 'vless-reality-grpc',
     server: '${SERVER_IPV4}',
-    server_port: 443,
+    server_port: 8446,
     uuid: '${VLESS_UUID}',
     flow: '',
     tls: {
@@ -62,7 +62,7 @@
     type: 'selector',
     tag: 'proxy',
     outbounds: ['auto'] + tags,
-    default: 'vless-reality-grpc',
+    default: 'vless-reality-vision',
   },
 
   urltest(tags, interval='1m', tag='auto'):: {

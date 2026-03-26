@@ -5,7 +5,7 @@
       "type": "vless",
       "tag": "vless-reality-vision",
       "listen": "::",
-      "listen_port": 8446,
+      "listen_port": 443,
       "users": [{ "uuid": "${VLESS_UUID}", "flow": "xtls-rprx-vision" }],
       "tls": {
         "enabled": true,
@@ -22,7 +22,7 @@
       "type": "vless",
       "tag": "vless-reality-grpc",
       "listen": "::",
-      "listen_port": 443,
+      "listen_port": 8446,
       "users": [{ "uuid": "${VLESS_UUID}", "flow": "" }],
       "tls": {
         "enabled": true,
