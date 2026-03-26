@@ -11,8 +11,8 @@ vpn_servers = {
   hel-01 = {
     location  = "hel1"
     type      = "cax11"
-    tcp_ports = [80, 443, 2053, 8446]
-    udp_ports = [443]
+    tcp_ports = [80, 443, 2053, 8446, 5201]
+    udp_ports = [443, 5201]
   }
 }
 
@@ -20,7 +20,7 @@ mesh_servers = {
   hel-01 = {
     location  = "hel1"
     type      = "cax11"
-    tcp_ports = [80, 443]
-    udp_ports = [3478]
+    tcp_ports = [80, 443, 5201]
+    udp_ports = [3478, 5201]
   }
 }
