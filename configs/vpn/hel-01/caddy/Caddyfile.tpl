@@ -2,7 +2,7 @@
 	email ${ACME_EMAIL}
 }
 
-${SERVER_ADDRESS} {
+${SERVER_ADDRESS}:8443 {
 	basic_auth {
 		${CADDY_USER} ${CADDY_HASH}
 	}

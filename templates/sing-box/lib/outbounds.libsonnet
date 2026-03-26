@@ -22,7 +22,7 @@
     type: 'vless',
     tag: 'vless-reality-grpc',
     server: '${SERVER_IPV4}',
-    server_port: 2053,
+    server_port: 443,
     uuid: '${VLESS_UUID}',
     flow: '',
     tls: {
@@ -62,7 +62,7 @@
     type: 'selector',
     tag: 'proxy',
     outbounds: ['auto'] + tags,
-    default: 'vless-reality-vision',
+    default: 'vless-reality-grpc',
   },
 
   urltest(tags, interval='1m', tag='auto'):: {

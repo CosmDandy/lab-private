@@ -22,7 +22,7 @@
       "type": "vless",
       "tag": "vless-reality-grpc",
       "listen": "::",
-      "listen_port": 2053,
+      "listen_port": 443,
       "users": [{ "uuid": "${VLESS_UUID}", "flow": "" }],
       "tls": {
         "enabled": true,

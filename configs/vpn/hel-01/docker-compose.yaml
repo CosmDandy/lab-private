@@ -8,7 +8,7 @@ services:
     init: true
     ports:
       - "80:80"
-      - "443:443/tcp"
+      - "8443:8443/tcp"
     volumes:
       - caddy_data:/data
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
@@ -35,8 +35,8 @@ services:
       retries: 3
       start_period: 10s
     ports:
+      - "443:443/tcp"
       - "443:443/udp"
-      - "2053:2053/tcp"
       - "8446:8446/tcp"
     cap_add:
       - NET_ADMIN
