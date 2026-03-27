@@ -26,7 +26,6 @@ resource "random_password" "salamander" {
   special  = false
 }
 
-
 locals {
   vpn_env_secrets = {
     for name, _ in var.vpn_servers : name => {
@@ -35,6 +34,7 @@ locals {
       REALITY_SHORT_ID    = var.reality_short_id
       HY2_PASSWORD        = random_password.hy2[name].result
       SALAMANDER_PASSWORD = random_password.salamander[name].result
+      WARP_PRIVATE_KEY    = var.warp_private_key
     }
   }
 
@@ -96,6 +96,26 @@ resource "github_actions_environment_variable" "vpn_acme_email" {
   environment   = "vpn-${each.key}"
   variable_name = "ACME_EMAIL"
   value         = var.acme_email
+
+  depends_on = [github_repository_environment.vpn]
+}
+
+resource "github_actions_environment_variable" "vpn_warp_address_v4" {
+  for_each      = var.vpn_servers
+  repository    = var.github_repository
+  environment   = "vpn-${each.key}"
+  variable_name = "WARP_ADDRESS_V4"
+  value         = var.warp_address_v4
+
+  depends_on = [github_repository_environment.vpn]
+}
+
+resource "github_actions_environment_variable" "vpn_warp_address_v6" {
+  for_each      = var.vpn_servers
+  repository    = var.github_repository
+  environment   = "vpn-${each.key}"
+  variable_name = "WARP_ADDRESS_V6"
+  value         = var.warp_address_v6
 
   depends_on = [github_repository_environment.vpn]
 }

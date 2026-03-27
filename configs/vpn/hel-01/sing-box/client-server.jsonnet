@@ -29,6 +29,8 @@ local route = import 'lib/route.libsonnet';
     [outbounds.selector(outbounds.allTags)]
     + [outbounds.urltest(outbounds.allTags)]
     + outbounds.allProtocols
+    + [outbounds.warpSelector()]
+    + [outbounds.warp()]
     + [outbounds.direct()],
   route: route.base({ default_domain_resolver: 'local' }),
   experimental: {

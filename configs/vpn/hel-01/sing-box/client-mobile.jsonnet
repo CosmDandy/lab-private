@@ -28,6 +28,8 @@ local route = import 'lib/route.libsonnet';
     [outbounds.selector(outbounds.allTags)]
     + [outbounds.urltest(outbounds.allTags, '10m')]
     + outbounds.allProtocols
+    + [outbounds.warpSelector()]
+    + [outbounds.warp()]
     + [outbounds.direct()],
   route: route.base(),
   experimental: {

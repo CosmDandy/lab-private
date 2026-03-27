@@ -53,6 +53,9 @@ jobs:
           REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
           HY2_PASSWORD: ${{ secrets.HY2_PASSWORD }}
           SALAMANDER_PASSWORD: ${{ secrets.SALAMANDER_PASSWORD }}
+          WARP_PRIVATE_KEY: ${{ secrets.WARP_PRIVATE_KEY }}
+          WARP_ADDRESS_V4: ${{ vars.WARP_ADDRESS_V4 }}
+          WARP_ADDRESS_V6: ${{ vars.WARP_ADDRESS_V6 }}
         run: |
           caddy_vars='$SERVER_ADDRESS $ACME_EMAIL $CADDY_USER $CADDY_HASH'
           for tpl in $CONFIG_DIR/caddy/*.tpl; do

@@ -48,6 +48,21 @@
     obfs: { type: 'salamander', password: '${SALAMANDER_PASSWORD}' },
   },
 
+  warp():: {
+    type: 'wireguard',
+    tag: 'warp',
+    private_key: '${WARP_PRIVATE_KEY}',
+    local_address: ['${WARP_ADDRESS_V4}/32', '${WARP_ADDRESS_V6}/128'],
+    mtu: 1280,
+    peers: [
+      {
+        public_key: 'bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=',
+        server: 'engage.cloudflareclient.com',
+        server_port: 2408,
+      },
+    ],
+  },
+
   direct():: { type: 'direct', tag: 'direct' },
 
   allProtocols:: [
@@ -63,6 +78,13 @@
     tag: 'proxy',
     outbounds: ['auto'] + tags,
     default: 'vless-reality-vision',
+  },
+
+  warpSelector():: {
+    type: 'selector',
+    tag: 'warp-out',
+    outbounds: ['warp', 'proxy', 'direct'],
+    default: 'warp',
   },
 
   urltest(tags, interval='1m', tag='auto'):: {

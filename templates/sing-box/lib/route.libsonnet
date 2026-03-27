@@ -52,6 +52,6 @@ local excludeAddresses = [
     rules: rules,
     rule_set: ruleSets,
     auto_detect_interface: true,
-    final: 'proxy',
+    final: 'warp-out',
   } + extra,
 }

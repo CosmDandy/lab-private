@@ -77,6 +77,20 @@ variable "hetzner_s3_secret_key" {
   sensitive = true
 }
 
+
+variable "warp_private_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "warp_address_v4" {
+  type = string
+}
+
+variable "warp_address_v6" {
+  type = string
+}
+
 variable "mesh_servers" {
   type = map(object({
     location  = string
