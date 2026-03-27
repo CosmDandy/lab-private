@@ -48,17 +48,19 @@
     obfs: { type: 'salamander', password: '${SALAMANDER_PASSWORD}' },
   },
 
-  warp():: {
+  warpEndpoint():: {
     type: 'wireguard',
     tag: 'warp',
+    detour: 'proxy',
     private_key: '${WARP_PRIVATE_KEY}',
     address: ['${WARP_ADDRESS_V4}/32', '${WARP_ADDRESS_V6}/128'],
     mtu: 1280,
     peers: [
       {
         public_key: 'bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=',
-        server: 'engage.cloudflareclient.com',
-        server_port: 2408,
+        address: 'engage.cloudflareclient.com',
+        port: 2408,
+        allowed_ips: ['0.0.0.0/0', '::/0'],
       },
     ],
   },

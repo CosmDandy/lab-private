@@ -30,8 +30,8 @@ local route = import 'lib/route.libsonnet';
     + [outbounds.urltest(outbounds.allTags)]
     + outbounds.allProtocols
     + [outbounds.warpSelector()]
-    + [outbounds.warp()]
     + [outbounds.direct()],
+  endpoints: [outbounds.warpEndpoint()],
   route: route.base({ default_domain_resolver: 'local' }),
   experimental: {
     cache_file: { enabled: true, path: 'cache.db' },

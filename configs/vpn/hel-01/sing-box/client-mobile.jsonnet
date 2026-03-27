@@ -29,8 +29,8 @@ local route = import 'lib/route.libsonnet';
     + [outbounds.urltest(outbounds.allTags, '10m')]
     + outbounds.allProtocols
     + [outbounds.warpSelector()]
-    + [outbounds.warp()]
     + [outbounds.direct()],
+  endpoints: [outbounds.warpEndpoint()],
   route: route.base(),
   experimental: {
     cache_file: { enabled: true, path: 'cache.db' },
