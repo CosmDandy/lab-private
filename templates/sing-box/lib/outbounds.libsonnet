@@ -52,7 +52,7 @@
     type: 'wireguard',
     tag: 'warp',
     private_key: '${WARP_PRIVATE_KEY}',
-    local_address: ['${WARP_ADDRESS_V4}/32', '${WARP_ADDRESS_V6}/128'],
+    address: ['${WARP_ADDRESS_V4}/32', '${WARP_ADDRESS_V6}/128'],
     mtu: 1280,
     peers: [
       {

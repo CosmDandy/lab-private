@@ -1,15 +1,24 @@
 local blockTags = ['geosite-ads'];
 local directTags = ['geosite-ru', 'geoip-ru', 'geosite-yandex', 'geosite-mailru', 'geosite-gov-ru'];
+local warpTags = ['geosite-openai', 'geosite-netflix', 'geosite-disney', 'geosite-spotify'];
 
 local rules = [
   { action: 'sniff' },
   { protocol: 'dns', action: 'hijack-dns' },
+
+  // Mode overrides (switchable from client UI)
+  { clash_mode: 'Proxy', outbound: 'proxy' },
+  { clash_mode: 'Direct', outbound: 'direct' },
+  { clash_mode: 'WARP', outbound: 'warp-out' },
+
+  // Auto rules
   { ip_cidr: ['${SERVER_IPV4}/32'], action: 'route', outbound: 'direct' },
   { ip_is_private: true, action: 'route', outbound: 'direct' },
   { ip_cidr: ['100.64.0.0/10'], action: 'route', outbound: 'direct' },
   { process_name: ['ssh', 'scp', 'sftp'], action: 'route', outbound: 'direct' },
   { rule_set: blockTags, action: 'reject' },
   { rule_set: directTags, action: 'route', outbound: 'direct' },
+  { rule_set: warpTags, action: 'route', outbound: 'warp-out' },
 ];
 
 local ruleSet(tag, repo, path) = {
@@ -27,6 +36,10 @@ local ruleSets = [
   ruleSet('geosite-mailru', 'geosite', 'geosite-mailru'),
   ruleSet('geosite-gov-ru', 'geosite', 'geosite-category-gov-ru'),
   ruleSet('geosite-ads', 'geosite', 'geosite-category-ads-all'),
+  ruleSet('geosite-openai', 'geosite', 'geosite-openai'),
+  ruleSet('geosite-netflix', 'geosite', 'geosite-netflix'),
+  ruleSet('geosite-disney', 'geosite', 'geosite-disney'),
+  ruleSet('geosite-spotify', 'geosite', 'geosite-spotify'),
 ];
 
 local excludeAddresses = [
@@ -52,6 +65,6 @@ local excludeAddresses = [
     rules: rules,
     rule_set: ruleSets,
     auto_detect_interface: true,
-    final: 'warp-out',
+    final: 'proxy',
   } + extra,
 }
