@@ -23,7 +23,6 @@ Personal VPN infrastructure managed entirely as code. Full lifecycle automation 
 | Deployment | GitHub Actions self-hosted runners, Docker Compose v2 |
 | VPN | [sing-box](https://sing-box.sagernet.org) (VLESS Reality, Hysteria2) |
 | Configuration | [Jsonnet](https://jsonnet.org) templates, envsubst |
-| Backup | rclone to Hetzner S3 Object Storage |
 
 ## Architecture
 

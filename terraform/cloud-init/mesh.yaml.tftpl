@@ -4,7 +4,7 @@ users:
   - name: github-runner
     groups: docker
     shell: /bin/bash
-    sudo: "ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/mkdir, /usr/bin/chown, /usr/bin/rsync, /usr/sbin/ufw, /usr/bin/docker, /usr/bin/sqlite3, /usr/bin/rclone, /usr/bin/cp, /usr/bin/tar"
+    sudo: "ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/mkdir, /usr/bin/chown, /usr/bin/rsync, /usr/sbin/ufw, /usr/bin/docker, /usr/bin/sqlite3, /usr/bin/cp, /usr/bin/tar"
   - name: root
     ssh_authorized_keys:
 %{ for key in ssh_public_keys ~}
@@ -111,31 +111,6 @@ runcmd:
   # Prepare deploy directory
   - mkdir -p /opt/vpn-infra
   - chown -R github-runner:github-runner /opt/vpn-infra
-
-  # Install rclone
-  - curl -fsSL https://rclone.org/install.sh | bash
-
-  # Restore Headscale data from S3
-  - |
-    docker volume create headscale_data 2>/dev/null || true
-    VOLUME_PATH=$(docker volume inspect headscale_data --format '{{ .Mountpoint }}')
-
-    export RCLONE_CONFIG_S3_TYPE=s3
-    export RCLONE_CONFIG_S3_PROVIDER=Other
-    export RCLONE_CONFIG_S3_ACCESS_KEY_ID="${s3_access_key}"
-    export RCLONE_CONFIG_S3_SECRET_ACCESS_KEY="${s3_secret_key}"
-    export RCLONE_CONFIG_S3_ENDPOINT="https://${s3_endpoint}"
-    export RCLONE_CONFIG_S3_REGION="hel1"
-
-    TMP_DIR=$(mktemp -d)
-    if rclone copy "s3:${s3_bucket}/headscale/latest.tar.gz" "$TMP_DIR/" 2>/dev/null; then
-      tar -xzf "$TMP_DIR/latest.tar.gz" -C "$TMP_DIR"
-      cp "$TMP_DIR/headscale/"* "$VOLUME_PATH/"
-      echo "Headscale data restored from S3"
-    else
-      echo "No backup found in S3, starting fresh"
-    fi
-    rm -rf "$TMP_DIR"
 
   # Install GitHub Actions runner
   - |
