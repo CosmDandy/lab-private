@@ -2,7 +2,7 @@ name: node
 
 services:
   remnawave-node:
-    image: remnawave/node:latest
+    image: remnawave/node:2.7.0
     container_name: remnawave-node
     restart: unless-stopped
     network_mode: host
