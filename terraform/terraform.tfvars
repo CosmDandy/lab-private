@@ -28,7 +28,7 @@ servers = {
     location  = "hel1"
     type      = "cax11"
     role      = "node"
-    tcp_ports = [443]
+    tcp_ports = [443, 2222]
     udp_ports = [443]
   }
 }
