@@ -11,8 +11,11 @@ data "github_actions_registration_token" "this" {
 locals {
   all_runners = merge(
     { for k, _ in var.vpn_servers : "vpn-${k}" => "vpn-${k}" },
-    { for k, _ in var.mesh_servers : "mesh-${k}" => "mesh-${k}" },
+    { for k, _ in var.servers : k => k },
   )
+  control_server  = one([for k, v in var.servers : k if contains(v.roles, "control")])
+  control_servers = { for k, v in var.servers : k => v if contains(v.roles, "control") }
+  node_servers    = { for k, v in var.servers : k => v if contains(v.roles, "node") }
 }
 
 resource "null_resource" "runner_cleanup" {
@@ -42,7 +45,7 @@ resource "null_resource" "runner_cleanup" {
 }
 
 # ──────────────────────────────────────────────
-# VPN servers
+# VPN servers (legacy, removed in Phase 5)
 # ──────────────────────────────────────────────
 
 module "vpn_server" {
@@ -75,15 +78,15 @@ module "vpn_server" {
 }
 
 # ──────────────────────────────────────────────
-# Mesh servers
+# Unified servers (Remnawave architecture)
 # ──────────────────────────────────────────────
 
-module "mesh_server" {
+module "server" {
   source   = "./modules/hcloud-server"
-  for_each = var.mesh_servers
+  for_each = var.servers
 
-  name        = "mesh-${each.key}"
-  dns_name    = "${each.key}.mesh"
+  name        = each.key
+  dns_name    = each.key
   location    = each.value.location
   server_type = each.value.type
   image       = each.value.image
@@ -91,15 +94,16 @@ module "mesh_server" {
   tcp_ports   = each.value.tcp_ports
   udp_ports   = each.value.udp_ports
 
-  labels = merge(each.value.labels, {
-    role = "mesh"
-  })
+  labels = merge(
+    each.value.labels,
+    { for role in each.value.roles : "role-${role}" => "true" },
+  )
 
-  cloud_init = templatefile("${path.module}/cloud-init/mesh.yaml.tftpl", {
+  cloud_init = templatefile("${path.module}/cloud-init/server.yaml.tftpl", {
     ssh_public_keys   = var.ssh_public_keys
     runner_token      = data.github_actions_registration_token.this.token
-    runner_name       = "mesh-${each.key}"
-    runner_labels     = "hcloud-mesh-${each.key}"
+    runner_name       = each.key
+    runner_labels     = "hcloud-${each.key}"
     github_repository = "${var.github_owner}/${var.github_repository}"
   })
 

@@ -80,10 +80,11 @@ variable "warp_address_v6" {
   type = string
 }
 
-variable "mesh_servers" {
+variable "servers" {
   type = map(object({
     location  = string
     type      = string
+    roles     = list(string)
     tcp_ports = list(number)
     udp_ports = list(number)
     image     = optional(string, "ubuntu-24.04")

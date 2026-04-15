@@ -1,0 +1,136 @@
+name: control
+
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - control_network
+
+  panel:
+    image: remnawave/backend:latest
+    container_name: panel
+    restart: unless-stopped
+    env_file:
+      - ./panel/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.panel.rule: "Host(`${PANEL_DOMAIN}`)"
+      traefik.http.routers.panel.entrypoints: websecure
+      traefik.http.routers.panel.tls.certresolver: letsencrypt
+      traefik.http.services.panel.loadbalancer.server.port: "3000"
+    networks:
+      - control_network
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: remnawave
+      POSTGRES_USER: remnawave
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U remnawave"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - control_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - control_network
+
+  headscale:
+    image: headscale/headscale:0.27.0
+    container_name: headscale
+    restart: unless-stopped
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    volumes:
+      - ./headscale:/etc/headscale
+      - headscale_data:/var/lib/headscale
+    healthcheck:
+      test: ["CMD", "headscale", "health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.headscale.rule: "Host(`${MESH_DOMAIN}`)"
+      traefik.http.routers.headscale.entrypoints: websecure
+      traefik.http.routers.headscale.tls.certresolver: letsencrypt
+      traefik.http.services.headscale.loadbalancer.server.port: "8080"
+      traefik.http.services.headscale.loadbalancer.responseforwarding.flushinterval: "-1"
+    networks:
+      - control_network
+    ports:
+      - "3478:3478/udp"
+    command: serve
+
+  headplane:
+    image: ghcr.io/tale/headplane:0.5.1
+    container_name: headplane
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/admin"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.headplane.rule: "Host(`${MESH_DOMAIN}`) && PathPrefix(`/admin`)"
+      traefik.http.routers.headplane.entrypoints: websecure
+      traefik.http.routers.headplane.tls.certresolver: letsencrypt
+      traefik.http.services.headplane.loadbalancer.server.port: "3000"
+    networks:
+      - control_network
+    volumes:
+      - ./headplane:/etc/headplane
+      - ./headscale:/etc/headscale
+      - headplane_data:/var/lib/headplane
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - headscale
+
+networks:
+  control_network:
+    name: control_network
+    driver: bridge
+
+volumes:
+  letsencrypt:
+    name: letsencrypt
+  postgres_data:
+    name: postgres_data
+  headscale_data:
+    name: headscale_data
+  headplane_data:
+    name: headplane_data

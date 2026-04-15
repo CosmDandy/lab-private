@@ -16,11 +16,12 @@ vpn_servers = {
   }
 }
 
-mesh_servers = {
-  hel-01 = {
+servers = {
+  htz-hel-01 = {
     location  = "hel1"
     type      = "cax11"
-    tcp_ports = [80, 443, 5201]
-    udp_ports = [3478, 5201]
+    roles     = ["control", "node"]
+    tcp_ports = [80, 443, 2222, 3478]
+    udp_ports = [443, 3478]
   }
 }

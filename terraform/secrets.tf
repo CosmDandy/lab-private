@@ -1,5 +1,5 @@
 # ══════════════════════════════════════════════
-# VPN
+# VPN (legacy, removed in Phase 5)
 # ══════════════════════════════════════════════
 
 resource "github_repository_environment" "vpn" {
@@ -7,8 +7,6 @@ resource "github_repository_environment" "vpn" {
   repository  = var.github_repository
   environment = "vpn-${each.key}"
 }
-
-# Per-server VPN secrets (unique)
 
 resource "random_uuid" "vless" {
   for_each = var.vpn_servers
@@ -141,34 +139,54 @@ resource "github_actions_environment_secret" "vpn_caddy_hash" {
 }
 
 # ══════════════════════════════════════════════
-# Mesh
+# Unified servers (Remnawave architecture)
 # ══════════════════════════════════════════════
 
-resource "github_repository_environment" "mesh" {
-  for_each    = var.mesh_servers
+resource "github_repository_environment" "server" {
+  for_each    = var.servers
   repository  = var.github_repository
-  environment = "mesh-${each.key}"
+  environment = each.key
 }
 
-resource "random_password" "mesh_cookie_secret" {
-  for_each = var.mesh_servers
+resource "random_password" "jwt_auth_secret" {
+  for_each = local.control_servers
+  length   = 64
+  special  = false
+}
+
+resource "random_password" "jwt_api_tokens_secret" {
+  for_each = local.control_servers
+  length   = 64
+  special  = false
+}
+
+resource "random_password" "postgres_password" {
+  for_each = local.control_servers
+  length   = 32
+  special  = false
+}
+
+resource "random_password" "cookie_secret" {
+  for_each = local.control_servers
   length   = 32
   special  = false
 }
 
 locals {
-  mesh_env_secrets = {
-    for name, _ in var.mesh_servers : name => {
-      COOKIE_SECRET = random_password.mesh_cookie_secret[name].result
-      CADDY_HASH    = var.caddy_hash
+  control_env_secrets = {
+    for name, _ in local.control_servers : name => {
+      JWT_AUTH_SECRET       = random_password.jwt_auth_secret[name].result
+      JWT_API_TOKENS_SECRET = random_password.jwt_api_tokens_secret[name].result
+      POSTGRES_PASSWORD     = random_password.postgres_password[name].result
+      COOKIE_SECRET         = random_password.cookie_secret[name].result
     }
   }
 
-  mesh_flat_secrets = merge([
-    for server, secrets in local.mesh_env_secrets : {
+  control_flat_secrets = merge([
+    for server, secrets in local.control_env_secrets : {
       for key, value in secrets :
       "${server}/${key}" => {
-        environment = "mesh-${server}"
+        environment = server
         key         = key
         value       = value
       }
@@ -176,53 +194,62 @@ locals {
   ]...)
 }
 
-resource "github_actions_environment_secret" "mesh" {
-  for_each        = local.mesh_flat_secrets
+resource "github_actions_environment_secret" "server" {
+  for_each        = local.control_flat_secrets
   repository      = var.github_repository
   environment     = each.value.environment
   secret_name     = each.value.key
   plaintext_value = each.value.value
 
-  depends_on = [github_repository_environment.mesh]
+  depends_on = [github_repository_environment.server]
 }
 
-resource "github_actions_environment_variable" "mesh_server_address" {
-  for_each      = var.mesh_servers
+resource "github_actions_environment_variable" "server_address" {
+  for_each      = var.servers
   repository    = var.github_repository
-  environment   = "mesh-${each.key}"
+  environment   = each.key
   variable_name = "SERVER_ADDRESS"
-  value         = module.mesh_server[each.key].fqdn
+  value         = module.server[each.key].fqdn
 
-  depends_on = [github_repository_environment.mesh]
+  depends_on = [github_repository_environment.server]
 }
 
-resource "github_actions_environment_variable" "mesh_server_ipv4" {
-  for_each      = var.mesh_servers
+resource "github_actions_environment_variable" "server_ipv4" {
+  for_each      = var.servers
   repository    = var.github_repository
-  environment   = "mesh-${each.key}"
+  environment   = each.key
   variable_name = "SERVER_IPV4"
-  value         = module.mesh_server[each.key].ipv4_address
+  value         = module.server[each.key].ipv4_address
 
-  depends_on = [github_repository_environment.mesh]
+  depends_on = [github_repository_environment.server]
 }
 
-resource "github_actions_environment_variable" "mesh_acme_email" {
-  for_each      = var.mesh_servers
+resource "github_actions_environment_variable" "server_acme_email" {
+  for_each      = var.servers
   repository    = var.github_repository
-  environment   = "mesh-${each.key}"
+  environment   = each.key
   variable_name = "ACME_EMAIL"
   value         = var.acme_email
 
-  depends_on = [github_repository_environment.mesh]
+  depends_on = [github_repository_environment.server]
 }
 
-resource "github_actions_environment_variable" "mesh_caddy_user" {
-  for_each      = var.mesh_servers
+resource "github_actions_environment_variable" "panel_domain" {
+  for_each      = local.control_servers
   repository    = var.github_repository
-  environment   = "mesh-${each.key}"
-  variable_name = "CADDY_USER"
-  value         = "mesh-${each.key}"
+  environment   = each.key
+  variable_name = "PANEL_DOMAIN"
+  value         = "vpn.${var.domain}"
 
-  depends_on = [github_repository_environment.mesh]
+  depends_on = [github_repository_environment.server]
 }
 
+resource "github_actions_environment_variable" "mesh_domain" {
+  for_each      = local.control_servers
+  repository    = var.github_repository
+  environment   = each.key
+  variable_name = "MESH_DOMAIN"
+  value         = "mesh.${var.domain}"
+
+  depends_on = [github_repository_environment.server]
+}
