@@ -14,7 +14,7 @@ output "servers" {
       ipv4  = s.ipv4_address
       ipv6  = s.ipv6_address
       fqdn  = s.fqdn
-      roles = var.servers[name].roles
+      role = var.servers[name].role
     }
   }
 }

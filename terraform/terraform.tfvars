@@ -20,14 +20,14 @@ servers = {
   htz-hel-01 = {
     location  = "hel1"
     type      = "cax11"
-    roles     = ["control"]
+    role      = "control"
     tcp_ports = [80, 443, 3478]
     udp_ports = [3478]
   }
   htz-hel-02 = {
     location  = "hel1"
     type      = "cax11"
-    roles     = ["node"]
+    role      = "node"
     tcp_ports = [443]
     udp_ports = [443]
   }

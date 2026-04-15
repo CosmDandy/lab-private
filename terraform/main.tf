@@ -13,9 +13,9 @@ locals {
     { for k, _ in var.vpn_servers : "vpn-${k}" => "vpn-${k}" },
     { for k, _ in var.servers : k => k },
   )
-  control_server  = one([for k, v in var.servers : k if contains(v.roles, "control")])
-  control_servers = { for k, v in var.servers : k => v if contains(v.roles, "control") }
-  node_servers    = { for k, v in var.servers : k => v if contains(v.roles, "node") }
+  control_server  = one([for k, v in var.servers : k if v.role == "control"])
+  control_servers = { for k, v in var.servers : k => v if v.role == "control" }
+  node_servers    = { for k, v in var.servers : k => v if v.role == "node" }
 }
 
 resource "null_resource" "runner_cleanup" {
@@ -96,7 +96,7 @@ module "server" {
 
   labels = merge(
     each.value.labels,
-    { for role in each.value.roles : "role-${role}" => "true" },
+    { "role" = each.value.role },
   )
 
   cloud_init = templatefile("${path.module}/cloud-init/server.yaml.tftpl", {
