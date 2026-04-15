@@ -1,4 +1,5 @@
 resource "cloudflare_dns_record" "panel" {
+  count   = local.control_server != null ? 1 : 0
   zone_id = var.cloudflare_zone_id
   name    = "vpn"
   type    = "CNAME"
@@ -8,6 +9,7 @@ resource "cloudflare_dns_record" "panel" {
 }
 
 resource "cloudflare_dns_record" "mesh" {
+  count   = local.control_server != null ? 1 : 0
   zone_id = var.cloudflare_zone_id
   name    = "mesh"
   type    = "A"

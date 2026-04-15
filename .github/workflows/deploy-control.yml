@@ -27,6 +27,7 @@ jobs:
           JWT_API_TOKENS_SECRET: ${{ secrets.JWT_API_TOKENS_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           COOKIE_SECRET: ${{ secrets.COOKIE_SECRET }}
+          METRICS_PASS: ${{ secrets.METRICS_PASS }}
         run: |
           for f in $(find $TEMPLATE_DIR -name '*.tpl'); do
             envsubst < "$f" > "${f%.tpl}"

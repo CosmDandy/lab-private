@@ -172,6 +172,12 @@ resource "random_password" "cookie_secret" {
   special  = false
 }
 
+resource "random_password" "metrics_pass" {
+  for_each = local.control_servers
+  length   = 32
+  special  = false
+}
+
 locals {
   control_env_secrets = {
     for name, _ in local.control_servers : name => {
@@ -179,6 +185,7 @@ locals {
       JWT_API_TOKENS_SECRET = random_password.jwt_api_tokens_secret[name].result
       POSTGRES_PASSWORD     = random_password.postgres_password[name].result
       COOKIE_SECRET         = random_password.cookie_secret[name].result
+      METRICS_PASS          = random_password.metrics_pass[name].result
     }
   }
 

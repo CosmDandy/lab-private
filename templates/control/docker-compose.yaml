@@ -5,6 +5,11 @@ services:
     image: traefik:v3.3
     container_name: traefik
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     ports:
       - "80:80"
       - "443:443"
@@ -21,6 +26,12 @@ services:
     restart: unless-stopped
     env_file:
       - ./panel/.env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,3 +1,5 @@
+ping: {}
+
 api:
   dashboard: false
 
