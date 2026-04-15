@@ -30,7 +30,7 @@ services:
 
   panel:
     image: remnawave/backend:2.7.4
-    container_name: panel
+    container_name: remnawave-panel
     restart: unless-stopped
     env_file:
       - ./panel/.env
@@ -50,7 +50,7 @@ services:
 
   postgres:
     image: postgres:17-alpine
-    container_name: postgres
+    container_name: remnawave-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: remnawave
@@ -68,7 +68,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis
+    container_name: remnawave-redis
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -129,7 +129,6 @@ services:
       - ./headplane:/etc/headplane
       - ./headscale:/etc/headscale
       - headplane_data:/var/lib/headplane
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - headscale
 

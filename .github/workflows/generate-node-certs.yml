@@ -21,7 +21,7 @@ jobs:
           for node in "${NODE_LIST[@]}"; do
             node=$(echo "$node" | xargs)
             echo "Generating SSL_CERT for $node..."
-            SSL_CERT=$(docker exec panel node -e '
+            SSL_CERT=$(docker exec remnawave-panel node -e '
               const{PrismaClient}=require("@prisma/client");
               const{generateNodeCert}=require("./dist/src/common/utils/certs");
               const{encodeCertPayload}=require("./dist/src/common/utils/certs/encode-node-payload");

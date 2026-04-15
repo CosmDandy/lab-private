@@ -11,7 +11,7 @@ headscale:
 
 integration:
   docker:
-    enabled: true
+    enabled: false
     container_name: "headscale"
     socket: "unix:///var/run/docker.sock"
   kubernetes:
