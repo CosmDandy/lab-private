@@ -270,3 +270,8 @@ resource "github_actions_environment_variable" "traefik_domain" {
 
   depends_on = [github_repository_environment.server]
 }
+
+# ══════════════════════════════════════════════
+# Node SSL certificates (generated from Panel)
+# ══════════════════════════════════════════════
+

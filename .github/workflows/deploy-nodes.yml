@@ -10,7 +10,7 @@ jobs:
   deploy:
     strategy:
       matrix:
-        node: [htz-hel-01]
+        node: [htz-hel-02]
     runs-on: hcloud-${{ matrix.node }}
     environment: ${{ matrix.node }}
     env:
