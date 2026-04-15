@@ -5,11 +5,19 @@ services:
     image: traefik:v3.6
     container_name: traefik
     restart: unless-stopped
+    environment:
+      - DOCKER_API_VERSION=1.47
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 30s
       timeout: 5s
       retries: 3
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.traefik.rule: "Host(`${TRAEFIK_DOMAIN}`)"
+      traefik.http.routers.traefik.entrypoints: websecure
+      traefik.http.routers.traefik.tls.certresolver: letsencrypt
+      traefik.http.routers.traefik.service: api@internal
     ports:
       - "80:80"
       - "443:443"
@@ -26,12 +34,6 @@ services:
     restart: unless-stopped
     env_file:
       - ./panel/.env
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:3001/metrics || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy

@@ -260,3 +260,13 @@ resource "github_actions_environment_variable" "mesh_domain" {
 
   depends_on = [github_repository_environment.server]
 }
+
+resource "github_actions_environment_variable" "traefik_domain" {
+  for_each      = local.control_servers
+  repository    = var.github_repository
+  environment   = each.key
+  variable_name = "TRAEFIK_DOMAIN"
+  value         = "traefik.${var.domain}"
+
+  depends_on = [github_repository_environment.server]
+}

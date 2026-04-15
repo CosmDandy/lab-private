@@ -1,7 +1,7 @@
 ping: {}
 
 api:
-  dashboard: false
+  dashboard: true
 
 entryPoints:
   web:

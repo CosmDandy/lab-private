@@ -23,6 +23,7 @@ jobs:
           ACME_EMAIL: ${{ vars.ACME_EMAIL }}
           PANEL_DOMAIN: ${{ vars.PANEL_DOMAIN }}
           MESH_DOMAIN: ${{ vars.MESH_DOMAIN }}
+          TRAEFIK_DOMAIN: ${{ vars.TRAEFIK_DOMAIN }}
           JWT_AUTH_SECRET: ${{ secrets.JWT_AUTH_SECRET }}
           JWT_API_TOKENS_SECRET: ${{ secrets.JWT_API_TOKENS_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
