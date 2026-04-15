@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Generate and store SSL_CERT for each node
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT_SECRETS }}
           NODES: ${{ inputs.nodes }}
         run: |
           IFS=',' read -ra NODE_LIST <<< "$NODES"
