@@ -11,9 +11,9 @@ output "vpn_servers" {
 output "servers" {
   value = {
     for name, s in module.server : name => {
-      ipv4  = s.ipv4_address
-      ipv6  = s.ipv6_address
-      fqdn  = s.fqdn
+      ipv4 = s.ipv4_address
+      ipv6 = s.ipv6_address
+      fqdn = s.fqdn
       role = var.servers[name].role
     }
   }
