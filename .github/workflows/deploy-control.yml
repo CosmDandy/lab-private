@@ -5,6 +5,8 @@ on:
     branches: [master]
     paths:
       - templates/control/**
+      - templates/subscription/**
+      - templates/panel/**
 
 jobs:
   deploy:
@@ -24,13 +26,16 @@ jobs:
           PANEL_DOMAIN: ${{ vars.PANEL_DOMAIN }}
           MESH_DOMAIN: ${{ vars.MESH_DOMAIN }}
           TRAEFIK_DOMAIN: ${{ vars.TRAEFIK_DOMAIN }}
+          SUB_DOMAIN: ${{ vars.SUB_DOMAIN }}
           JWT_AUTH_SECRET: ${{ secrets.JWT_AUTH_SECRET }}
           JWT_API_TOKENS_SECRET: ${{ secrets.JWT_API_TOKENS_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           COOKIE_SECRET: ${{ secrets.COOKIE_SECRET }}
           METRICS_PASS: ${{ secrets.METRICS_PASS }}
+          REALITY_PRIVATE_KEY: ${{ secrets.REALITY_PRIVATE_KEY }}
+          REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
         run: |
-          for f in $(find $TEMPLATE_DIR -name '*.tpl'); do
+          for f in $(find templates -name '*.tpl'); do
             envsubst < "$f" > "${f%.tpl}"
           done
 
@@ -55,3 +60,15 @@ jobs:
             docker compose logs --tail 30
             exit 1
           }
+
+      - name: Sync Panel config (profiles, nodes, hosts)
+        env:
+          PANEL_URL: https://${{ vars.PANEL_DOMAIN }}
+          API_TOKEN: ${{ secrets.PANEL_API_TOKEN }}
+        run: bash templates/panel/sync.sh templates/panel/config.json
+
+      - name: Sync subscription templates
+        env:
+          PANEL_URL: https://${{ vars.PANEL_DOMAIN }}
+          API_TOKEN: ${{ secrets.PANEL_API_TOKEN }}
+        run: bash templates/subscription/sync.sh templates/subscription

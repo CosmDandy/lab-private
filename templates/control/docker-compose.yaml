@@ -78,6 +78,23 @@ services:
     networks:
       - control_network
 
+  subscription-page:
+    image: remnawave/subscription-page:latest
+    container_name: remnawave-subscription-page
+    restart: unless-stopped
+    env_file:
+      - ./subscription/.env
+    depends_on:
+      - panel
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.subscription.rule: "Host(`${SUB_DOMAIN}`)"
+      traefik.http.routers.subscription.entrypoints: websecure
+      traefik.http.routers.subscription.tls.certresolver: letsencrypt
+      traefik.http.services.subscription.loadbalancer.server.port: "3010"
+    networks:
+      - control_network
+
   headscale:
     image: headscale/headscale:0.28.0
     container_name: headscale

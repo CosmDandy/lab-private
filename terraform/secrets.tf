@@ -271,6 +271,16 @@ resource "github_actions_environment_variable" "traefik_domain" {
   depends_on = [github_repository_environment.server]
 }
 
+resource "github_actions_environment_variable" "sub_domain" {
+  for_each      = local.control_servers
+  repository    = var.github_repository
+  environment   = each.key
+  variable_name = "SUB_DOMAIN"
+  value         = "sub.${var.domain}"
+
+  depends_on = [github_repository_environment.server]
+}
+
 # ══════════════════════════════════════════════
 # Node SSL certificates (generated from Panel)
 # ══════════════════════════════════════════════
