@@ -15,26 +15,25 @@ jobs:
     env:
       TEMPLATE_DIR: templates/control
       DEPLOY_DIR: /opt/control
+      SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
+      SERVER_IPV4: ${{ vars.SERVER_IPV4 }}
+      ACME_EMAIL: ${{ vars.ACME_EMAIL }}
+      PANEL_DOMAIN: ${{ vars.PANEL_DOMAIN }}
+      MESH_DOMAIN: ${{ vars.MESH_DOMAIN }}
+      TRAEFIK_DOMAIN: ${{ vars.TRAEFIK_DOMAIN }}
+      SUB_DOMAIN: ${{ vars.SUB_DOMAIN }}
+      JWT_AUTH_SECRET: ${{ secrets.JWT_AUTH_SECRET }}
+      JWT_API_TOKENS_SECRET: ${{ secrets.JWT_API_TOKENS_SECRET }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      COOKIE_SECRET: ${{ secrets.COOKIE_SECRET }}
+      METRICS_PASS: ${{ secrets.METRICS_PASS }}
+      REALITY_PRIVATE_KEY: ${{ secrets.REALITY_PRIVATE_KEY }}
+      REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
+      PANEL_API_TOKEN: ${{ secrets.PANEL_API_TOKEN }}
     steps:
       - uses: actions/checkout@v6
 
       - name: Render templates
-        env:
-          SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
-          SERVER_IPV4: ${{ vars.SERVER_IPV4 }}
-          ACME_EMAIL: ${{ vars.ACME_EMAIL }}
-          PANEL_DOMAIN: ${{ vars.PANEL_DOMAIN }}
-          MESH_DOMAIN: ${{ vars.MESH_DOMAIN }}
-          TRAEFIK_DOMAIN: ${{ vars.TRAEFIK_DOMAIN }}
-          SUB_DOMAIN: ${{ vars.SUB_DOMAIN }}
-          JWT_AUTH_SECRET: ${{ secrets.JWT_AUTH_SECRET }}
-          JWT_API_TOKENS_SECRET: ${{ secrets.JWT_API_TOKENS_SECRET }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          COOKIE_SECRET: ${{ secrets.COOKIE_SECRET }}
-          METRICS_PASS: ${{ secrets.METRICS_PASS }}
-          REALITY_PRIVATE_KEY: ${{ secrets.REALITY_PRIVATE_KEY }}
-          REALITY_SHORT_ID: ${{ secrets.REALITY_SHORT_ID }}
-          PANEL_API_TOKEN: ${{ secrets.PANEL_API_TOKEN }}
         run: |
           for f in $(find templates -name '*.tpl'); do
             envsubst < "$f" > "${f%.tpl}"
